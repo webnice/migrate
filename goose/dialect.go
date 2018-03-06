@@ -33,6 +33,8 @@ func SetDialect(d string) error {
 		dialect = &RedshiftDialect{}
 	case "tidb":
 		dialect = &TiDBDialect{}
+	case "clickhouse":
+		dialect = &ClickHouseDialect{}
 	default:
 		return fmt.Errorf("%q: unknown dialect", d)
 	}
@@ -49,11 +51,11 @@ type PostgresDialect struct{}
 
 func (pg PostgresDialect) createVersionTableSQL() string {
 	return `CREATE TABLE goose_db_version (
-            	id serial NOT NULL,
-                version_id bigint NOT NULL,
-                is_applied boolean NOT NULL,
-                tstamp timestamp NULL default now(),
-                PRIMARY KEY(id)
+              id serial NOT NULL,
+              version_id bigint NOT NULL,
+              is_applied boolean NOT NULL,
+              tstamp timestamp NULL default now(),
+              PRIMARY KEY(id)
             );`
 }
 
@@ -79,11 +81,11 @@ type MySQLDialect struct{}
 
 func (m MySQLDialect) createVersionTableSQL() string {
 	return `CREATE TABLE goose_db_version (
-                id serial NOT NULL,
-                version_id bigint NOT NULL,
-                is_applied boolean NOT NULL,
-                tstamp timestamp NULL default now(),
-                PRIMARY KEY(id)
+              id serial NOT NULL,
+              version_id bigint NOT NULL,
+              is_applied boolean NOT NULL,
+              tstamp timestamp NULL default now(),
+              PRIMARY KEY(id)
             );`
 }
 
@@ -109,10 +111,10 @@ type Sqlite3Dialect struct{}
 
 func (m Sqlite3Dialect) createVersionTableSQL() string {
 	return `CREATE TABLE goose_db_version (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                version_id INTEGER NOT NULL,
-                is_applied INTEGER NOT NULL,
-                tstamp TIMESTAMP DEFAULT (datetime('now'))
+	          id INTEGER PRIMARY KEY AUTOINCREMENT,
+	          version_id INTEGER NOT NULL,
+              is_applied INTEGER NOT NULL,
+              tstamp TIMESTAMP DEFAULT (datetime('now'))
             );`
 }
 
@@ -138,11 +140,11 @@ type RedshiftDialect struct{}
 
 func (rs RedshiftDialect) createVersionTableSQL() string {
 	return `CREATE TABLE goose_db_version (
-            	id integer NOT NULL identity(1, 1),
-                version_id bigint NOT NULL,
-                is_applied boolean NOT NULL,
-                tstamp timestamp NULL default sysdate,
-                PRIMARY KEY(id)
+              id integer NOT NULL identity(1, 1),
+              version_id bigint NOT NULL,
+              is_applied boolean NOT NULL,
+              tstamp timestamp NULL default sysdate,
+              PRIMARY KEY(id)
             );`
 }
 
@@ -168,12 +170,12 @@ type TiDBDialect struct{}
 
 func (m TiDBDialect) createVersionTableSQL() string {
 	return `CREATE TABLE goose_db_version (
-                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
-                version_id bigint NOT NULL,
-                is_applied boolean NOT NULL,
-                tstamp timestamp NULL default now(),
-                PRIMARY KEY(id)
-            );`
+	          id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
+	          version_id bigint NOT NULL,
+	          is_applied boolean NOT NULL,
+	          tstamp timestamp NULL default now(),
+	          PRIMARY KEY(id)
+	        );`
 }
 
 func (m TiDBDialect) insertVersionSQL() string {
@@ -186,5 +188,35 @@ func (m TiDBDialect) dbVersionQuery(db *sql.DB) (*sql.Rows, error) {
 		return nil, err
 	}
 
+	return rows, err
+}
+
+////////////////////////////
+// ClickHouse
+////////////////////////////
+
+// ClickHouseDialect struct.
+type ClickHouseDialect struct{}
+
+func (ClickHouseDialect) createVersionTableSQL() string {
+	return `
+		CREATE TABLE goose_db_version (
+		  version_id Int64,
+		  is_applied UInt8,
+		  date       Date     default today(),
+		  tstamp     DateTime default now()
+		) Engine = MergeTree(date, (date), 8192)
+	`
+}
+
+func (ClickHouseDialect) insertVersionSQL() string {
+	return "INSERT INTO goose_db_version (version_id, is_applied) VALUES (?, ?)"
+}
+
+func (ClickHouseDialect) dbVersionQuery(db *sql.DB) (*sql.Rows, error) {
+	rows, err := db.Query("SELECT version_id, is_applied FROM goose_db_version ORDER BY version_id DESC, tstamp DESC")
+	if err != nil {
+		return nil, err
+	}
 	return rows, err
 }

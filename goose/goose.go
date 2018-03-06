@@ -14,74 +14,59 @@ var (
 )
 
 // Run runs a goose command.
-func Run(command string, db *sql.DB, dir string, args ...string) error {
+func Run(command string, db *sql.DB, dir string, args ...string) (err error) {
+	var version int64
+
 	switch command {
 	case "up":
-		if err := Up(db, dir); err != nil {
-			return err
-		}
+		err = Up(db, dir)
 	case "up-by-one":
-		if err := UpByOne(db, dir); err != nil {
-			return err
-		}
+		err = UpByOne(db, dir)
 	case "up-to":
 		if len(args) == 0 {
-			return fmt.Errorf("up-to must be of form: goose [OPTIONS] DRIVER DBSTRING up-to VERSION")
+			err = fmt.Errorf("up-to must be of form: goose [OPTIONS] DRIVER DBSTRING up-to VERSION")
+			return
 		}
-
-		version, err := strconv.ParseInt(args[0], 10, 64)
+		version, err = strconv.ParseInt(args[0], 10, 64)
 		if err != nil {
-			return fmt.Errorf("version must be a number (got '%s')", args[0])
+			err = fmt.Errorf("version must be a number (got '%s')", args[0])
+			return
 		}
-		if err := UpTo(db, dir, version); err != nil {
-			return err
-		}
+		err = UpTo(db, dir, version)
 	case "create":
 		if len(args) == 0 {
-			return fmt.Errorf("create must be of form: goose [OPTIONS] DRIVER DBSTRING create NAME [go|sql]")
+			err = fmt.Errorf("create must be of form: goose [OPTIONS] DRIVER DBSTRING create NAME [go|sql]")
+			return
 		}
-
 		migrationType := "go"
 		if len(args) == 2 {
 			migrationType = args[1]
 		}
-		if err := Create(db, dir, args[0], migrationType); err != nil {
-			return err
-		}
+		err = Create(db, dir, args[0], migrationType)
 	case "down":
-		if err := Down(db, dir); err != nil {
-			return err
-		}
+		err = Down(db, dir)
 	case "down-to":
 		if len(args) == 0 {
-			return fmt.Errorf("down-to must be of form: goose [OPTIONS] DRIVER DBSTRING down-to VERSION")
+			err = fmt.Errorf("down-to must be of form: goose [OPTIONS] DRIVER DBSTRING down-to VERSION")
+			return
 		}
-
-		version, err := strconv.ParseInt(args[0], 10, 64)
+		version, err = strconv.ParseInt(args[0], 10, 64)
 		if err != nil {
-			return fmt.Errorf("version must be a number (got '%s')", args[0])
+			err = fmt.Errorf("version must be a number (got '%s')", args[0])
+			return
 		}
-		if err := DownTo(db, dir, version); err != nil {
-			return err
-		}
+		err = DownTo(db, dir, version)
 	case "redo":
-		if err := Redo(db, dir); err != nil {
-			return err
-		}
+		err = Redo(db, dir)
 	case "reset":
-		if err := Reset(db, dir); err != nil {
-			return err
-		}
+		err = Reset(db, dir)
 	case "status":
-		if err := Status(db, dir); err != nil {
-			return err
-		}
+		err = Status(db, dir)
 	case "version":
-		if err := Version(db, dir); err != nil {
-			return err
-		}
+		err = Version(db, dir)
 	default:
-		return fmt.Errorf("%q: no such command", command)
+		err = fmt.Errorf("%q: no such command", command)
 	}
-	return nil
+
+	return
 }

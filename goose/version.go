@@ -6,12 +6,13 @@ import (
 )
 
 // Version prints the current version of the database.
-func Version(db *sql.DB, dir string) error {
-	current, err := GetDBVersion(db)
-	if err != nil {
-		return err
-	}
+func Version(db *sql.DB, dir string) (err error) {
+	var current int64
 
-	log.Printf("goose: version %v\n", current)
-	return nil
+	if current, err = GetDBVersion(db); err != nil {
+		return
+	}
+	log.Printf("goose: version %014d\n", current)
+
+	return
 }

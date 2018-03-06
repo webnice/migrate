@@ -257,8 +257,7 @@ func createVersionTable(db *sql.DB) error {
 		return err
 	}
 
-	version := 0
-	applied := true
+	version, applied := 0, true
 	if _, err := txn.Exec(d.insertVersionSQL(), version, applied); err != nil {
 		txn.Rollback()
 		return err
@@ -269,11 +268,9 @@ func createVersionTable(db *sql.DB) error {
 
 // GetDBVersion is a wrapper for EnsureDBVersion for callers that don't already
 // have their own DB instance
-func GetDBVersion(db *sql.DB) (int64, error) {
-	version, err := EnsureDBVersion(db)
-	if err != nil {
-		return -1, err
+func GetDBVersion(db *sql.DB) (version int64, err error) {
+	if version, err = EnsureDBVersion(db); err != nil {
+		version = -1
 	}
-
-	return version, nil
+	return
 }
