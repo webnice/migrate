@@ -9,7 +9,8 @@ default: lint test
 
 link:
 	@echo "prepare..."
-	@mkdir {src,bin} 2>/dev/null; true
+	@mkdir src 2>/dev/null; true
+	@mkdir bin 2>/dev/null; true
 	@if [ ! -L $(DIR)/src/goose ]; then ln -s $(DIR)/goose $(DIR)/src/goose 2>/dev/null; fi
 	@if [ ! -L $(DIR)/src/gsmigrate ]; then ln -s $(DIR)/gsmigrate $(DIR)/src/gsmigrate 2>/dev/null; fi
 	@if [ ! -L $(DIR)/src/vendor ]; then ln -s $(DIR)/vendor $(DIR)/src/vendor 2>/dev/null; fi
