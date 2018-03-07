@@ -109,7 +109,7 @@ Apply all available migrations
     $ OK    20180305100000_begin.sql
     $ OK    20180306100000_next.sql
     $ OK    20180307100000_and_again.sql
-		$ goose: no migrations to run. current version: 20180307100000
+    $ goose: no migrations to run. current version: 20180307100000
 
 ## up-to
 
@@ -117,8 +117,8 @@ Migrate up to a specific version
 
     $ gsmigrate up-to 20180306100000
     $ OK    20180305100000_begin.sql
-		$ OK    20180306100000_next.sql
-		$ goose: no migrations to run. current version: 20180306100000
+    $ OK    20180306100000_next.sql
+    $ goose: no migrations to run. current version: 20180306100000
 
 ## down
 
@@ -126,7 +126,7 @@ Roll back a single migration from the current version
 
     $ gsmigrate down
     $ OK    20180307100000_and_again.sql
-		$ goose: no migrations to run. current version: 20180306100000
+    $ goose: no migrations to run. current version: 20180306100000
 
 ## down-to
 
@@ -134,18 +134,18 @@ Roll back migrations to a specific version
 
     $ gsmigrate down-to 20180305100000
     $ OK    20180307100000_and_again.sql
-		$ OK    20180306100000_next.sql
-		$ goose: no migrations to run. current version: 20180305100000
+    $ OK    20180306100000_next.sql
+    $ goose: no migrations to run. current version: 20180305100000
 
 ## redo
 
 Roll back the most recently applied migration, then run it again
 
     $ gsmigrate redo
-		$ -- SQL in this section is executed when the migration is rolled back..
+    $ -- SQL in this section is executed when the migration is rolled back..
     $ OK    20180307100000_and_again.sql
-		$ -- SQL in this section is executed when the migration is applied..
-		$ OK    20180307100000_and_again.sql
+    $ -- SQL in this section is executed when the migration is applied..
+    $ OK    20180307100000_and_again.sql
 
 ## status
 
@@ -153,10 +153,10 @@ Print the status of all migrations:
 
     $ gsmigrate status
     $ Applied At                  Migration
-		$ =======================================
-		$ Wed Mar  7 14:57:35 2018 -- 20180305100000_begin.sql
-		$ Wed Mar  7 15:01:20 2018 -- 20180306100000_next.sql
-		$ Pending                  -- 20180307100000_and_again.sql
+    $ =======================================
+    $ Wed Mar  7 14:57:35 2018 -- 20180305100000_begin.sql
+    $ Wed Mar  7 15:01:20 2018 -- 20180306100000_next.sql
+    $ Pending                  -- 20180307100000_and_again.sql
 
 ## version
 
