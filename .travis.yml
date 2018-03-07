@@ -1,0 +1,22 @@
+language: go
+
+install:
+  - go get github.com/mattn/goveralls
+  - go get gopkg.in/webnice/debug.v1
+  - go get gopkg.in/webnice/log.v2
+  - go get gopkg.in/alecthomas/kingpin.v2
+  - go get github.com/kshvakov/clickhouse
+  - go get github.com/stretchr/testify/assert
+  - go get github.com/go-sql-driver/mysql
+  - go get github.com/lib/pq
+  - go get github.com/mattn/go-sqlite3
+  - go get github.com/ziutek/mymysql/godrv
+
+script:
+  - make test
+  - GOPATH=`pwd` $HOME/gopath/bin/goveralls -coverprofile=coverage.log -service=travis-ci -repotoken $COVERALLS_TOKEN
+
+go:
+  - 1.8
+  - 1.9
+  - tip

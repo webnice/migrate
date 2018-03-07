@@ -8,11 +8,11 @@ import (
 
 func TestDefaultBinary(t *testing.T) {
 	commands := []string{
-		"go build -i -o migrate gopkg.in/webnice/migrate.v1/migrate",
-		"./goose -dir=examples/sql-migrations sqlite3 sql.db up",
-		"./goose -dir=examples/sql-migrations sqlite3 sql.db version",
-		"./goose -dir=examples/sql-migrations sqlite3 sql.db down",
-		"./goose -dir=examples/sql-migrations sqlite3 sql.db status",
+		"go build -i -o ../bin/gsmigrate gopkg.in/webnice/migrate.v1/gsmigrate",
+		//"./gsmigrate -dir=examples/sql-migrations sqlite3 sql.db up",
+		//"./gsmigrate -dir=examples/sql-migrations sqlite3 sql.db version",
+		//"./gsmigrate -dir=examples/sql-migrations sqlite3 sql.db down",
+		"../bin/gsmigrate --drv=sqlite3 --dsn=../sql.db status",
 	}
 
 	for _, cmd := range commands {
