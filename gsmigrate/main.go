@@ -49,6 +49,7 @@ func main() {
 	if db, err = sql.Open(arg.Driver, arg.Dsn); err != nil {
 		log.Fatalf("Connect to database error: %s", err)
 	}
+	db.SetConnMaxLifetime(0)
 	// Running command of database migration with different arguments
 	switch cmd {
 	case `up-to`, `down-to`:
