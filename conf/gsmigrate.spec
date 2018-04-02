@@ -24,7 +24,7 @@ Provides: %{name} = %{version}-%{release}
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 ExclusiveArch: x86_64
-Conflicts:     wdstreamer
+Conflicts:     wdmigrations
 
 
 %description
