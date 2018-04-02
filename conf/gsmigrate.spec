@@ -78,5 +78,5 @@ rm -rf %{buildroot}
 
 
 %changelog
-* Mon Apr 2 2018 Alexander V. Tsarev <a.tsarev@webdesk.ru> version: %{_app_version_number} build: %{_app_version_build}
+* Mon Apr 2 2018 version: %{_app_version_number} build: %{_app_version_build}
 - Initial RPM (go binary) release.
