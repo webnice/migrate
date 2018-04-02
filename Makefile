@@ -5,7 +5,33 @@ DATE=$(shell date -u +%Y%m%d.%H%M%S.%Z)
 TESTPACKETS=$(shell if [ -f .testpackages ]; then cat .testpackages; fi)
 BENCHPACKETS=$(shell if [ -f .benchpackages ]; then cat .benchpackages; fi)
 
+PRJ01=gsmigrate
+BIN01=$(DIR)/bin/$(PRJ01)
+VER01="1.0.0-build.$(DATE)"
+VERN01=$(shell echo "$(VER01)" | awk -F '-' '{ print $$1 }' )
+VERB01=$(shell echo "$(VER01)" | awk -F 'build.' '{ print $$2 }' )
+
 default: lint test
+
+dep: link
+	@mkdir -p ${DIR}/{bin,pkg} 2>/dev/null; true
+	if command -v "gvt"; then cd ${DIR}/src; GOPATH="$(DIR)" gvt update -all; fi
+.PHONY: dep
+
+build:
+	GOPATH="$(DIR)" go build -o ${BIN01} ${PRJ01}
+.PHONY: build
+
+rpm:
+	mkdir -p ${DIR}/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}; true
+	cp -v ${DIR}/conf/${PRJ01}.spec ${DIR}/rpmbuild/SPECS/${PRJ01}.spec
+	cp -v ${DIR}/bin/${PRJ01} ${DIR}/rpmbuild/SOURCES/${PRJ01}
+	rpmbuild \
+		--define "_topdir $(DIR)/rpmbuild" \
+		--define "_app_version_number $(VERN01)" \
+		--define "_app_version_build $(VERB01)" \
+		-bb "$(DIR)/rpmbuild/SPECS/$(PRJ01).spec"
+.PHONY: rpm
 
 link:
 	@echo "prepare..."
@@ -62,6 +88,7 @@ clean:
 	@rm -rf ${DIR}/src; true
 	@rm -rf ${DIR}/bin; true
 	@rm -rf ${DIR}/pkg; true
+	@rm -rf ${DIR}/rpmbuild; true
 	@rm -rf ${DIR}/*.log; true
 	@rm -rf ${DIR}/*.db; true
 .PHONY: clean
