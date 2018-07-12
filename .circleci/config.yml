@@ -8,6 +8,5 @@ jobs:
     steps:
       - checkout
 
-      - run: go get -t -d -v ./...
       - run: make dep
       - run: make test
