@@ -1,0 +1,9 @@
+version: 2
+jobs:
+  build:
+    working_directory: /go/src/github.com/CircleCI-Public/migrate
+    steps:
+      - checkout
+      - run: go get -t -d -v ./...
+      - run: make dep
+      - run: make test
