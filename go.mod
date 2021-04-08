@@ -11,5 +11,4 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/ziutek/mymysql v1.5.5-0.20171217234033-ff6cc86d3d93
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
-	gopkg.in/webnice/migrate.v1 v1.0.0-20180712225528-873c124e81ae
 )

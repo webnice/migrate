@@ -38,6 +38,3 @@ github.com/ziutek/mymysql/native
 # gopkg.in/alecthomas/kingpin.v2 v2.2.6
 ## explicit
 gopkg.in/alecthomas/kingpin.v2
-# gopkg.in/webnice/migrate.v1 v1.0.0-20180712225528-873c124e81ae
-## explicit
-gopkg.in/webnice/migrate.v1/goose
