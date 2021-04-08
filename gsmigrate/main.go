@@ -8,18 +8,20 @@ import (
 	"gopkg.in/webnice/migrate.v1/goose"
 
 	// Init database drivers
-	_ "github.com/go-sql-driver/mysql"  // Mysql
-	_ "github.com/kshvakov/clickhouse"  // Clickhouse
-	_ "github.com/lib/pq"               // Postgres, Cockroach, Redshift
-	_ "github.com/mattn/go-sqlite3"     // Sqlite
-	_ "github.com/ziutek/mymysql/godrv" // App Engine CloudSQL
+	_ "github.com/ClickHouse/clickhouse-go" // Clickhouse
+	_ "github.com/go-sql-driver/mysql"      // Mysql
+	_ "github.com/lib/pq"                   // Postgres, Cockroach, Redshift
+	_ "github.com/mattn/go-sqlite3"         // Sqlite
+	_ "github.com/ziutek/mymysql/godrv"     // App Engine CloudSQL
 )
 
 func main() {
-	var err error
-	var cmd string
-	var arg *Args
-	var db *sql.DB
+	var (
+		err error
+		cmd string
+		arg *Args
+		db  *sql.DB
+	)
 
 	cmd, arg = args()
 	// Exclusive execution of the create command

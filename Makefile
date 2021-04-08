@@ -1,6 +1,7 @@
 DIR=$(strip $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))))
 
-GOPATH := $(DIR):$(GOPATH)
+GOPATH := $(GOPATH)
+GOBIN  := $(DIR)/bin
 DATE=$(shell date -u +%Y%m%d.%H%M%S.%Z)
 TESTPACKETS=$(shell if [ -f .testpackages ]; then cat .testpackages; fi)
 BENCHPACKETS=$(shell if [ -f .benchpackages ]; then cat .benchpackages; fi)
@@ -15,11 +16,14 @@ default: lint test
 
 dep: link
 	@mkdir -p ${DIR}/{bin,pkg} 2>/dev/null; true
-	if command -v "gvt"; then cd ${DIR}/src; GOPATH="$(DIR)" gvt update -all; fi
+	@go get -u ./...
+	@go mod download
+	@go mod tidy
+	@go mod vendor
 .PHONY: dep
 
 build:
-	GOPATH="$(DIR)" go build -o ${BIN01} ${PRJ01}
+	GO111MODULE="off" GOPATH="$(DIR)" go build -o ${BIN01} ${PRJ01}
 .PHONY: build
 
 rpm:

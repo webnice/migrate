@@ -3,6 +3,11 @@
 *.a
 *.so
 
+# IDE
+.project
+.settings
+.idea
+
 # Folders
 _obj
 _test
