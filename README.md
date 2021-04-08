@@ -1,10 +1,11 @@
 # migrate
 
-[![GoDoc](https://godoc.org/gopkg.in/webnice/migrate.v1/goose?status.svg)](https://godoc.org/gopkg.in/webnice/migrate.v1/goose)
+[![GoDoc](https://godoc.org/github.com/webnice/migrate/goose?status.svg)](https://godoc.org/github.com/webnice/migrate/goose)
 [![Go Report Card](https://goreportcard.com/badge/github.com/webnice/migrate)](https://goreportcard.com/report/github.com/webnice/migrate)
-[![Coverage Status](https://coveralls.io/repos/github/webnice/migrate/badge.svg?branch=v1)](https://coveralls.io/github/webnice/migrate?branch=v1)
-[![Build Status](https://travis-ci.org/webnice/migrate.svg?branch=v1)](https://travis-ci.org/webnice/migrate)
 [![CircleCI](https://circleci.com/gh/webnice/migrate/tree/v1.svg?style=svg)](https://circleci.com/gh/webnice/migrate/tree/v1)
+
+[comment]: <> ([![Coverage Status]&#40;https://coveralls.io/repos/github/webnice/migrate/badge.svg?branch=v1&#41;]&#40;https://coveralls.io/github/webnice/migrate?branch=v1&#41;)
+[comment]: <> ([![Build Status]&#40;https://travis-ci.org/webnice/migrate.svg?branch=v1&#41;]&#40;https://travis-ci.org/webnice/migrate&#41;)
 
 Is a database migration tool. Manage your database schema by creating incremental SQL changes or Go functions.
 
@@ -23,7 +24,7 @@ Based on goose lib of `bitbucket.org/liamstask/goose`
 
 # Install
 
-	$ go get -u gopkg.in/webnice/migrate.v1/gsmigrate
+	$ go get -u github.com/webnice/migrate/gsmigrate
 
 This will install the `gsmigrate` binary to your `$GOPATH/bin` directory.
 
@@ -224,7 +225,7 @@ language plpgsql;
 ## Go Migrations
 
 1. Create your own goose binary
-2. Import `gopkg.in/webnice/migrate.v1/goose`
+2. Import `github.com/webnice/migrate/goose`
 3. Register your migration functions
 4. Run goose command, ie. `goose.Up(db *sql.DB, dir string)`
 
@@ -236,7 +237,7 @@ package main
 import (
 	"database/sql"
 
-	"gopkg.in/webnice/migrate.v1/goose"
+	"github.com/webnice/migrate/goose"
 )
 
 func init() {

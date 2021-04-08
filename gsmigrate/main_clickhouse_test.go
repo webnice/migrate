@@ -11,7 +11,7 @@ import (
 )
 
 //func TestClickHouseDialect(t *testing.T) {
-//	out, err := exec.Command("go", strings.Fields("go build -i -o gsmigrate gopkg.in/webnice/migrate.v1/gsmigrate")...).CombinedOutput()
+//	out, err := exec.Command("go", strings.Fields("go build -i -o gsmigrate github.com/webnice/migrate/gsmigrate")...).CombinedOutput()
 //	if !assert.NoError(t, err, string(out)) {
 //		return
 //	}

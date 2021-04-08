@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    working_directory: /go/src/gopkg.in/webnice/migrate.v1/gsmigrate
+    working_directory: /go/src/github.com/webnice/migrate/gsmigrate
     docker:
       - image: circleci/golang:1.8
 

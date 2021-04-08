@@ -1,2 +1,2 @@
-gopkg.in/webnice/migrate.v1/goose
-gopkg.in/webnice/migrate.v1/gsmigrate
+github.com/webnice/migrate/goose
+github.com/webnice/migrate/gsmigrate

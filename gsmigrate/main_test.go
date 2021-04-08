@@ -8,7 +8,7 @@ import (
 
 //func TestDefaultBinary(t *testing.T) {
 //	commands := []string{
-//		"go build -i -o ../bin/gsmigrate gopkg.in/webnice/migrate.v1/gsmigrate",
+//		"go build -i -o ../bin/gsmigrate github.com/webnice/migrate/gsmigrate",
 //		//"./gsmigrate -dir=examples/sql-migrations sqlite3 sql.db up",
 //		//"./gsmigrate -dir=examples/sql-migrations sqlite3 sql.db version",
 //		//"./gsmigrate -dir=examples/sql-migrations sqlite3 sql.db down",

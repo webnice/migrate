@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"gopkg.in/webnice/migrate.v1/goose"
+	"github.com/webnice/migrate/goose"
 
 	// Init database drivers
 	_ "github.com/ClickHouse/clickhouse-go" // Clickhouse

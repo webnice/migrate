@@ -23,7 +23,7 @@ dep: link
 .PHONY: dep
 
 build:
-	GO111MODULE="off" GOPATH="$(DIR)" go build -o ${BIN01} ${PRJ01}
+	@GO111MODULE="on" go build -o ${BIN01} "github.com/webnice/migrate/${PRJ01}"
 .PHONY: build
 
 rpm:
