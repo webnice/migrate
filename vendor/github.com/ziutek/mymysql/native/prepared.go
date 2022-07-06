@@ -20,7 +20,7 @@ type Stmt struct {
 	field_count   int
 	param_count   int
 	warning_count int
-	status        mysql.ConnStatus
+	status        uint16
 
 	null_bitmap []byte
 }

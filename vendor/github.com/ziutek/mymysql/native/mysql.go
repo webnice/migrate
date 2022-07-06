@@ -1,16 +1,15 @@
-// Package native is a thread unsafe engine for MyMySQL.
+// Thread unsafe engine for MyMySQL
 package native
 
 import (
 	"bufio"
 	"fmt"
+	"github.com/ziutek/mymysql/mysql"
 	"io"
 	"net"
 	"reflect"
 	"strings"
 	"time"
-
-	"github.com/ziutek/mymysql/mysql"
 )
 
 type serverInfo struct {
@@ -45,7 +44,7 @@ type Conn struct {
 	stmt_map  map[uint32]*Stmt // For reprepare during reconnect
 
 	// Current status of MySQL server connection
-	status mysql.ConnStatus
+	status uint16
 
 	// Maximum packet size that client can accept from server.
 	// Default 16*1024*1024-1. You may change it before connect.
@@ -86,10 +85,6 @@ func New(proto, laddr, raddr, user, passwd string, db ...string) mysql.Conn {
 		panic("mymy.New: too many arguments")
 	}
 	return &my
-}
-
-func (my *Conn) Credentials() (user, passwd string) {
-	return my.user, my.passwd
 }
 
 func (my *Conn) NarrowTypeSet(narrow bool) {
@@ -390,7 +385,7 @@ func (res *Result) getRow(row mysql.Row) (err error) {
 // Returns true if more results exixts. You don't have to call it before
 // NextResult method (NextResult returns nil if there is no more results).
 func (res *Result) MoreResults() bool {
-	return res.status&mysql.SERVER_MORE_RESULTS_EXISTS != 0
+	return res.status&_SERVER_MORE_RESULTS_EXISTS != 0
 }
 
 // Get the data row from server. This method reads one row of result set
@@ -790,11 +785,10 @@ func (res *Result) GetRows() ([]mysql.Row, error) {
 // Escapes special characters in the txt, so it is safe to place returned string
 // to Query method.
 func (my *Conn) Escape(txt string) string {
-	return mysql.Escape(my, txt)
-}
-
-func (my *Conn) Status() mysql.ConnStatus {
-	return my.status
+	if my.status&_SERVER_STATUS_NO_BACKSLASH_ESCAPES != 0 {
+		return escapeQuotes(txt)
+	}
+	return escapeString(txt)
 }
 
 type Transaction struct {

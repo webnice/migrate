@@ -1,5 +1,5 @@
 # github.com/ClickHouse/clickhouse-go v1.5.4
-## explicit
+## explicit; go 1.12
 github.com/ClickHouse/clickhouse-go
 github.com/ClickHouse/clickhouse-go/lib/binary
 github.com/ClickHouse/clickhouse-go/lib/cityhash102
@@ -13,22 +13,23 @@ github.com/ClickHouse/clickhouse-go/lib/types
 github.com/alecthomas/template
 github.com/alecthomas/template/parse
 # github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137
-## explicit
+## explicit; go 1.15
 github.com/alecthomas/units
 # github.com/cloudflare/golz4 v0.0.0-20150217214814-ef862a3cdc58
+## explicit
 github.com/cloudflare/golz4
 # github.com/go-sql-driver/mysql v1.6.0
-## explicit
+## explicit; go 1.10
 github.com/go-sql-driver/mysql
 # github.com/lib/pq v1.10.6
-## explicit
+## explicit; go 1.13
 github.com/lib/pq
 github.com/lib/pq/oid
 github.com/lib/pq/scram
 # github.com/mattn/go-sqlite3 v1.14.14
-## explicit
+## explicit; go 1.12
 github.com/mattn/go-sqlite3
-# github.com/ziutek/mymysql v1.5.5-0.20171217234033-ff6cc86d3d93
+# github.com/ziutek/mymysql v1.5.4
 ## explicit
 github.com/ziutek/mymysql/godrv
 github.com/ziutek/mymysql/mysql

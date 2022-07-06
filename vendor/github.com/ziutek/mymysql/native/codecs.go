@@ -1,7 +1,9 @@
 package native
 
 import (
+	"bytes"
 	"github.com/ziutek/mymysql/mysql"
+	"io"
 	"time"
 )
 
@@ -372,11 +374,11 @@ func (pr *pktReader) readTime() time.Time {
 	return time.Date(y, time.Month(mon), d, h, m, s, n, time.Local)
 }
 
-func encodeNonzeroTime(buf []byte, y int16, mon, d, h, m, s byte, u uint32) int {
+func encodeNonzeroTime(buf []byte, y int16, mon, d, h, m, s byte, n uint32) int {
 	buf[0] = 0
 	switch {
-	case u != 0:
-		EncodeU32(buf[8:12], u)
+	case n != 0:
+		EncodeU32(buf[8:12], n)
 		buf[0] += 4
 		fallthrough
 	case s != 0 || m != 0 || h != 0:
@@ -393,7 +395,7 @@ func encodeNonzeroTime(buf []byte, y int16, mon, d, h, m, s byte, u uint32) int 
 }
 
 func getTimeMicroseconds(t time.Time) int {
-	return (t.Nanosecond() + int(time.Microsecond/2)) / int(time.Microsecond)
+	return t.Nanosecond()/int(time.Microsecond)
 }
 
 func EncodeTime(buf []byte, t time.Time) int {
@@ -455,4 +457,51 @@ func lenDate(d mysql.Date) int {
 		return 1
 	}
 	return 5
+}
+
+func escapeString(txt string) string {
+	var (
+		esc string
+		buf bytes.Buffer
+	)
+	last := 0
+	for ii, bb := range txt {
+		switch bb {
+		case 0:
+			esc = `\0`
+		case '\n':
+			esc = `\n`
+		case '\r':
+			esc = `\r`
+		case '\\':
+			esc = `\\`
+		case '\'':
+			esc = `\'`
+		case '"':
+			esc = `\"`
+		case '\032':
+			esc = `\Z`
+		default:
+			continue
+		}
+		io.WriteString(&buf, txt[last:ii])
+		io.WriteString(&buf, esc)
+		last = ii + 1
+	}
+	io.WriteString(&buf, txt[last:])
+	return buf.String()
+}
+
+func escapeQuotes(txt string) string {
+	var buf bytes.Buffer
+	last := 0
+	for ii, bb := range txt {
+		if bb == '\'' {
+			io.WriteString(&buf, txt[last:ii])
+			io.WriteString(&buf, `''`)
+			last = ii + 1
+		}
+	}
+	io.WriteString(&buf, txt[last:])
+	return buf.String()
 }
