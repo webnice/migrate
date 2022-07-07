@@ -14,7 +14,7 @@ VERB01=$(shell echo "$(VER01)" | awk -F 'build.' '{ print $$2 }' )
 
 default: lint test
 
-dep: link
+dep:
 	@mkdir -p ${DIR}/{bin,pkg} 2>/dev/null; true
 	@go get -u ./...
 	@go mod download
@@ -23,7 +23,7 @@ dep: link
 .PHONY: dep
 
 build:
-	@GO111MODULE="on" go build -o ${BIN01} "github.com/webnice/migrate/${PRJ01}"
+	@cd ${DIR}/gsmigrate; go build -o ${BIN01}
 .PHONY: build
 
 rpm:
@@ -37,23 +37,7 @@ rpm:
 		-bb "$(DIR)/rpmbuild/SPECS/$(PRJ01).spec"
 .PHONY: rpm
 
-link:
-	@echo "prepare..."
-	@mkdir src 2>/dev/null; true
-	@mkdir bin 2>/dev/null; true
-	@if [ ! -L $(DIR)/src/goose ]; then ln -s $(DIR)/goose $(DIR)/src/goose 2>/dev/null; fi
-	@if [ ! -L $(DIR)/src/gsmigrate ]; then ln -s $(DIR)/gsmigrate $(DIR)/src/gsmigrate 2>/dev/null; fi
-	@if [ ! -L $(DIR)/src/vendor ]; then ln -s $(DIR)/vendor $(DIR)/src/vendor 2>/dev/null; fi
-	@if [ ! -L $(DIR)/src/github.com ]; then ln -s $(DIR)/vendor/github.com $(DIR)/src/github.com 2>/dev/null; fi
-	@if [ ! -L $(DIR)/src/golang.org ]; then ln -s $(DIR)/vendor/golang.org $(DIR)/src/golang.org 2>/dev/null; fi
-	@if [ ! -L $(DIR)/src/google.golang.org ]; then ln -s $(DIR)/vendor/google.golang.org $(DIR)/src/google.golang.org 2>/dev/null; fi
-	@if [ ! -L $(DIR)/src/alecthomas ]; then ln -s $(DIR)/vendor/gopkg.in/alecthomas $(DIR)/src/alecthomas 2>/dev/null; fi
-	@cd ${DIR}/src && ln -s . gopkg.in 2>/dev/null; true
-	@cd ${DIR}/src && ln -s . webnice 2>/dev/null; true
-	@cd ${DIR}/src && ln -s . migrate.v1 2>/dev/null; true
-.PHONY: link
-
-test: link
+test:
 	@echo "mode: set" > $(DIR)/coverage.log
 	@for PACKET in $(TESTPACKETS); do \
 		touch $(DIR)/coverage-tmp.log; \
@@ -69,12 +53,12 @@ cover: test
 	@make clean
 .PHONY: cover
 
-bench: link
+bench:
 	@for PACKET in $(BENCHPACKETS); do GOPATH=${GOPATH} go test -race -bench=. -benchmem $$PACKET; done
 	@make clean
 .PHONY: bench
 
-lint: link
+lint:
 	GOPATH=${GOPATH} gometalinter \
 	--vendor \
 	--deadline=15m \

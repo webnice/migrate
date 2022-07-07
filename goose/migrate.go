@@ -106,11 +106,11 @@ func AddNamedMigration(filename string, up func(*sql.Tx) error, down func(*sql.T
 // CollectMigrations returns all the valid looking migration scripts in the
 // migrations folder and go func registry, and key them by version.
 func CollectMigrations(dirpath string, current, target int64) (Migrations, error) {
+	var migrations Migrations
+
 	if _, err := os.Stat(dirpath); os.IsNotExist(err) {
 		return nil, fmt.Errorf("%s directory does not exists", dirpath)
 	}
-
-	var migrations Migrations
 
 	// SQL migration files.
 	sqlMigrationFiles, err := filepath.Glob(dirpath + "/**.sql")
@@ -199,6 +199,8 @@ func versionFilter(v, current, target int64) bool {
 // EnsureDBVersion retrieves the current version for this DB.
 // Create and initialize the DB version table if it doesn't exist.
 func EnsureDBVersion(db *sql.DB) (int64, error) {
+	var row *MigrationRecord
+
 	rows, err := GetDialect().dbVersionQuery(db)
 	if err != nil {
 		return 0, createVersionTable(db)
@@ -212,7 +214,8 @@ func EnsureDBVersion(db *sql.DB) (int64, error) {
 	toSkip := make([]int64, 0)
 
 	for rows.Next() {
-		var row MigrationRecord
+		row = new(MigrationRecord)
+
 		if err = rows.Scan(&row.VersionID, &row.IsApplied); err != nil {
 			log.Fatal("error scanning rows:", err)
 		}

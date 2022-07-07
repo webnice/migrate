@@ -4,13 +4,11 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
-	"sync"
 )
 
 var (
-	duplicateCheckOnce sync.Once
-	minVersion         = int64(0)
-	maxVersion         = int64((1 << 63) - 1)
+	minVersion = int64(0)
+	maxVersion = int64((1 << 63) - 1)
 )
 
 // Run runs a goose command.

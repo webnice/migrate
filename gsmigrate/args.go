@@ -1,8 +1,6 @@
 package main
 
-import (
-	"gopkg.in/alecthomas/kingpin.v2"
-)
+import "gopkg.in/alecthomas/kingpin.v2"
 
 func args() (cmd string, args *Args) {
 	args = new(Args)

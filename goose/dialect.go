@@ -13,7 +13,7 @@ type SQLDialect interface {
 	dbVersionQuery(db *sql.DB) (*sql.Rows, error)
 }
 
-var dialect SQLDialect = &PostgresDialect{}
+var dialect SQLDialect = &MySQLDialect{}
 
 // GetDialect gets the SQLDialect
 func GetDialect() SQLDialect {
@@ -23,10 +23,10 @@ func GetDialect() SQLDialect {
 // SetDialect sets the SQLDialect
 func SetDialect(d string) error {
 	switch d {
-	case "postgres":
-		dialect = &PostgresDialect{}
 	case "mysql":
 		dialect = &MySQLDialect{}
+	case "postgres":
+		dialect = &PostgresDialect{}
 	case "sqlite3":
 		dialect = &Sqlite3Dialect{}
 	case "redshift":
@@ -80,13 +80,13 @@ func (pg PostgresDialect) dbVersionQuery(db *sql.DB) (*sql.Rows, error) {
 type MySQLDialect struct{}
 
 func (m MySQLDialect) createVersionTableSQL() string {
-	return `CREATE TABLE goose_db_version (
-              id serial NOT NULL,
-              version_id bigint NOT NULL,
-              is_applied boolean NOT NULL,
-              tstamp timestamp NULL default now(),
-              PRIMARY KEY(id)
-            );`
+	return "CREATE TABLE `goose_db_version` (" +
+		"id serial NOT NULL COMMENT 'Уникальный идентификатор записи.', " +
+		"version_id BIGINT(20) NOT NULL COMMENT 'Номер версии базы данных.', " +
+		"is_applied BOOLEAN NOT NULL COMMENT 'Истина - миграция применена. Ложь - миграция не применена.', " +
+		"tstamp TIMESTAMP NULL DEFAULT now() COMMENT 'Дата и время миграции.', " +
+		"PRIMARY KEY (id)" +
+		") AUTO_INCREMENT = 1 COMMENT = 'Лог миграций';"
 }
 
 func (m MySQLDialect) insertVersionSQL() string {
@@ -94,7 +94,7 @@ func (m MySQLDialect) insertVersionSQL() string {
 }
 
 func (m MySQLDialect) dbVersionQuery(db *sql.DB) (*sql.Rows, error) {
-	rows, err := db.Query("SELECT version_id, is_applied from goose_db_version ORDER BY id DESC")
+	rows, err := db.Query("SELECT version_id, is_applied FROM goose_db_version ORDER BY id DESC")
 	if err != nil {
 		return nil, err
 	}
