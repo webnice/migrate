@@ -22,6 +22,10 @@ dep:
 	@go mod vendor
 .PHONY: dep
 
+## Встраивание внешней статики в приложение.
+embed:
+.PHONY: embed
+
 build:
 	@cd ${DIR}/gsmigrate; go build -o ${BIN01}
 .PHONY: build
