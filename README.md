@@ -1,7 +1,6 @@
 # migrate
 
 [![GoDoc](https://godoc.org/github.com/webnice/migrate/goose?status.svg)](https://godoc.org/github.com/webnice/migrate/goose)
-[![Go Report Card](https://goreportcard.com/badge/github.com/webnice/migrate)](https://goreportcard.com/report/github.com/webnice/migrate)
 [![CircleCI](https://circleci.com/gh/webnice/migrate/tree/v1.svg?style=svg)](https://circleci.com/gh/webnice/migrate/tree/v1)
 
 [comment]: <> ([![Coverage Status]&#40;https://coveralls.io/repos/github/webnice/migrate/badge.svg?branch=v1&#41;]&#40;https://coveralls.io/github/webnice/migrate?branch=v1&#41;)
