@@ -1,9 +1,13 @@
 DIR=$(strip $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))))
 
-GOBIN  := $(DIR)/bin
-DATE=$(shell date -u +%Y%m%d.%H%M%S.%Z)
-TESTPACKETS=$(shell if [ -f .testpackages ]; then cat .testpackages; fi)
-BENCHPACKETS=$(shell if [ -f .benchpackages ]; then cat .benchpackages; fi)
+GOBIN               := $(DIR)/bin
+DATE                := $(shell date -u +%Y%m%d.%H%M%S.%Z)
+LDFLAGS              = -X main.build=$(DATE) $(LDFLAGS_MODE)
+GOGENERATE           = $(shell if [ -f .gogenerate ]; then cat .gogenerate; fi)
+TESTPACKETS          = $(shell if [ -f .testpackages ]; then cat .testpackages; fi)
+BENCHPACKETS         = $(shell if [ -f .benchpackages ]; then cat .benchpackages; fi)
+LOCALPACKAGES        = $(shell if [ -f .localpackages ]; then cat .localpackages; fi)
+PACKAGES_LOCK        = $(shell if [ -f .packages_lock ]; then cat .packages_lock; fi)
 
 PRJ01=gsmigrate
 BIN01=$(DIR)/bin/$(PRJ01)
@@ -13,7 +17,11 @@ VERB01=$(shell echo "$(VER01)" | awk -F 'build.' '{ print $$2 }' )
 
 default: lint test
 
-dep:
+## Обновление и загрузка зависимостей.
+dep-init:
+	@rm -rf ${DIR}/vendor 2>/dev/null; true
+.PHONY: dep-init
+dep: dep-init
 	@mkdir -p ${DIR}/bin ${DIR}/pkg 2>/dev/null; true
 	@go get -u ./...
 	@go mod download
@@ -21,8 +29,19 @@ dep:
 	@go mod vendor
 .PHONY: dep
 
-## Встраивание внешней статики в приложение.
+## Кодогенерация (run only during development).
+## All generating files are included in a .gogenerate file.
+gen: dep-init
+	@for PKGNAME in $(GOGENERATE); do \
+		DB2STRUCT_DRV='$(MIGRATION_DRV_MYSQL)' \
+		DB2STRUCT_DSN='$(MIGRATION_DSN_MYSQL)' \
+		go generate -v "${APP_PACKAGE}/$${PKGNAME}"; \
+	done
+.PHONY: gen
+
+## Встраивание статических ресурсов в приложение.
 embed:
+	@echo ""Встраивание статических ресурсов.
 .PHONY: embed
 
 build:
