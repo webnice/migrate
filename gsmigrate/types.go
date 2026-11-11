@@ -1,6 +1,6 @@
 package main
 
-import "gopkg.in/alecthomas/kingpin.v2"
+import "github.com/alecthomas/kingpin/v2"
 
 type Args struct {
 	Up            *kingpin.CmdClause // Migrate the DB to the most recent version available

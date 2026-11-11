@@ -1,6 +1,5 @@
 DIR=$(strip $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))))
 
-GOPATH := $(GOPATH)
 GOBIN  := $(DIR)/bin
 DATE=$(shell date -u +%Y%m%d.%H%M%S.%Z)
 TESTPACKETS=$(shell if [ -f .testpackages ]; then cat .testpackages; fi)
@@ -15,7 +14,7 @@ VERB01=$(shell echo "$(VER01)" | awk -F 'build.' '{ print $$2 }' )
 default: lint test
 
 dep:
-	@mkdir -p ${DIR}/{bin,pkg} 2>/dev/null; true
+	@mkdir -p ${DIR}/bin ${DIR}/pkg 2>/dev/null; true
 	@go get -u ./...
 	@go mod download
 	@go mod tidy
@@ -42,42 +41,33 @@ rpm:
 .PHONY: rpm
 
 test:
-	@echo "mode: set" > $(DIR)/coverage.log
+	@echo "mode: count" > $(DIR)/coverage.log
 	@for PACKET in $(TESTPACKETS); do \
 		touch $(DIR)/coverage-tmp.log; \
-		GOPATH=${GOPATH} go test -v -covermode=count -coverprofile=$(DIR)/coverage-tmp.log $$PACKET; \
-		if [ "$$?" -ne "0" ]; then exit $$?; fi; \
+		go test -v -covermode=count -coverprofile=$(DIR)/coverage-tmp.log $$PACKET || exit 1; \
 		tail -n +2 $(DIR)/coverage-tmp.log | sort -r | awk '{if($$1 != last) {print $$0;last=$$1}}' >> $(DIR)/coverage.log; \
 		rm -f $(DIR)/coverage-tmp.log; true; \
 	done
 .PHONY: test
 
 cover: test
-	GOPATH=${GOPATH} go tool cover -html=$(DIR)/coverage.log
+	go tool cover -html=$(DIR)/coverage.log
 	@make clean
 .PHONY: cover
 
 bench:
-	@for PACKET in $(BENCHPACKETS); do GOPATH=${GOPATH} go test -race -bench=. -benchmem $$PACKET; done
+	@if [ -n "$(BENCHPACKETS)" ]; then \
+		for PACKET in $(BENCHPACKETS); do go test -race -bench=. -benchmem $$PACKET; done; \
+	fi
 	@make clean
 .PHONY: bench
 
 lint:
-	GOPATH=${GOPATH} gometalinter \
-	--vendor \
-	--deadline=15m \
-	--cyclo-over=20 \
-	--disable=aligncheck \
-	--linter="vet:go tool vet -printf {path}/*.go:PATH:LINE:MESSAGE" \
-	--skip=src/vendor \
-	--skip=github.com/mattn/go-sqlite3 \
-	./...
-	@make clean
+	go vet ./...
 .PHONY: lint
 
 clean:
 	@echo "cleaning..."
-	@rm -rf ${DIR}/src; true
 	@rm -rf ${DIR}/bin; true
 	@rm -rf ${DIR}/pkg; true
 	@rm -rf ${DIR}/rpmbuild; true
