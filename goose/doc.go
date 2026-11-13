@@ -54,7 +54,7 @@ Go-миграции регистрируются функциями AddMigration
 	import (
 		"database/sql"
 
-		"github.com/webnice/migrate/goose"
+		"github.com/webnice/migrate/v2/goose"
 	)
 
 	func init() {
@@ -90,7 +90,7 @@ Errors().DirectoryNotExists.Bind(dirpath). Сравнение ошибок вы�
 Готовая утилита gsmigrate, построенная на этом пакете, устанавливается
 командой:
 
-	go install github.com/webnice/migrate/gsmigrate@latest
+	go install github.com/webnice/migrate/v2/gsmigrate@latest
 
 */
 

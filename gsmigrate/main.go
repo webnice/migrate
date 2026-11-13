@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"os"
 
-	"github.com/webnice/migrate/goose"
+	"github.com/webnice/migrate/v2/goose"
 
 	// Подключение драйверов баз данных.
 	_ "github.com/ClickHouse/clickhouse-go" // Clickhouse

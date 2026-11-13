@@ -1,2 +1,2 @@
-github.com/webnice/migrate/goose
-github.com/webnice/migrate/gsmigrate
+github.com/webnice/migrate/v2/goose
+github.com/webnice/migrate/v2/gsmigrate

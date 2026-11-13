@@ -2,7 +2,7 @@
 
 Утилита gsmigrate — командный интерфейс применения миграций базы данных.
 
-Утилита построена на библиотеке github.com/webnice/migrate/goose и
+Утилита построена на библиотеке github.com/webnice/migrate/v2/goose и
 предоставляет доступ ко всем её командам: up, up-to, down, down-to, redo,
 reset, status, version и create.
 

@@ -2,7 +2,7 @@
 
 ---
 
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/webnice/migrate)](https://pkg.go.dev/github.com/webnice/migrate)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/webnice/migrate/v2)](https://pkg.go.dev/github.com/webnice/migrate/v2)
 [![Coverage Status](https://coveralls.io/repos/github/webnice/migrate/badge.svg?branch=master)](https://coveralls.io/github/webnice/migrate?branch=master)
 
 ### migrate
@@ -40,14 +40,14 @@
 ## Установка
 
 ```bash
-go install github.com/webnice/migrate/gsmigrate@latest
+go install github.com/webnice/migrate/v2/gsmigrate@latest
 ```
 
 Подключение библиотеки:
 
 ```go
 import (
-	"github.com/webnice/migrate/goose"
+	"github.com/webnice/migrate/v2/goose"
 )
 ```
 
@@ -237,7 +237,7 @@ Go-миграции выполняются собственным бинарны
 `goose`. Для этого:
 
 1. Создайте собственный бинарный файл;
-2. Импортируйте `github.com/webnice/migrate/goose`;
+2. Импортируйте `github.com/webnice/migrate/v2/goose`;
 3. Зарегистрируйте функции миграций;
 4. Вызовите команду goose, например `goose.Up(db, dir)`.
 
@@ -249,7 +249,7 @@ package main
 import (
 	"database/sql"
 
-	"github.com/webnice/migrate/goose"
+	"github.com/webnice/migrate/v2/goose"
 )
 
 func init() {

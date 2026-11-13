@@ -1,4 +1,4 @@
-module github.com/webnice/migrate
+module github.com/webnice/migrate/v2
 
 go 1.24.0
 

@@ -72,7 +72,7 @@ var (
 import (
 	"database/sql"
 
-	"github.com/webnice/migrate/goose"
+	"github.com/webnice/migrate/v2/goose"
 )
 
 func init() {
