@@ -3,7 +3,7 @@
 ---
 
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/webnice/migrate/v2)](https://pkg.go.dev/github.com/webnice/migrate/v2)
-[![Coverage Status](https://coveralls.io/repos/github/webnice/migrate/badge.svg?branch=master)](https://coveralls.io/github/webnice/migrate?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/webnice/migrate/badge.svg?branch=v2)](https://coveralls.io/github/webnice/migrate?branch=v2)
 
 ### migrate
 
