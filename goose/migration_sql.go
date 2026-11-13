@@ -10,174 +10,180 @@ import (
 	"strings"
 )
 
-const sqlCmdPrefix = "-- +goose "
+// Проверка завершения строки точкой с запятой.
+// Комментарий после двойного дефиса при проверке не учитывается.
+func endsWithSemicolon(line string) (ret bool) {
+	var (
+		prev    string
+		word    string
+		scanner *bufio.Scanner
+	)
 
-// Checks the line to see if the line has a statement-ending semicolon
-// or if the line contains a double-dash comment.
-func endsWithSemicolon(line string) bool {
-
-	prev := ""
-	scanner := bufio.NewScanner(strings.NewReader(line))
+	scanner = bufio.NewScanner(strings.NewReader(line))
 	scanner.Split(bufio.ScanWords)
-
 	for scanner.Scan() {
-		word := scanner.Text()
+		word = scanner.Text()
 		if strings.HasPrefix(word, "--") {
 			break
 		}
 		prev = word
 	}
+	ret = strings.HasSuffix(prev, ";")
 
-	return strings.HasSuffix(prev, ";")
+	return
 }
 
-// Split the given sql script into individual statements.
+// Разбивает SQL-скрипт миграции на отдельные выражения.
 //
-// The base case is to simply split on semicolons, as these
-// naturally terminate a statement.
+// Базовый случай — разделение выражений точкой с запятой, естественно
+// завершающей выражение. Более сложные случаи, например PL/pgSQL, содержат
+// точки с запятой внутри выражения; для них предусмотрены явные аннотации
+// StatementBegin и StatementEnd, отключающие разделение по точке с запятой.
 //
-// However, more complex cases like pl/pgsql can have semicolons
-// within a statement. For these cases, we provide the explicit annotations
-// 'StatementBegin' and 'StatementEnd' to allow the script to
-// tell us to ignore semicolons.
-func getSQLStatements(r io.Reader, direction bool) (stmts []string, tx bool) {
-	var buf bytes.Buffer
-	scanner := bufio.NewScanner(r)
+// Вторым возвращаемым значением передаётся признак необходимости выполнения
+// миграции внутри транзакции.
+func getSQLStatements(r io.Reader, direction bool) (ret []string, tx bool, err error) {
+	const (
+		warnNoStatementEnd = "ВНИМАНИЕ: обнаружена аннотация '-- +goose StatementBegin' без парной '-- +goose StatementEnd'"
+		tplUnfinished      = "ВНИМАНИЕ: незавершённое SQL-выражение: %s. Возможно пропущена точка с запятой"
+	)
+	var (
+		buf               bytes.Buffer
+		scanner           *bufio.Scanner
+		line              string
+		cmd               string
+		upSections        int
+		downSections      int
+		statementEnded    bool
+		ignoreSemicolons  bool
+		directionIsActive bool
+	)
 
-	// track the count of each section
-	// so we can diagnose scripts with no annotations
-	upSections := 0
-	downSections := 0
-
-	statementEnded := false
-	ignoreSemicolons := false
-	directionIsActive := false
 	tx = true
-
+	scanner = bufio.NewScanner(r)
 	for scanner.Scan() {
-
-		line := scanner.Text()
-
-		// handle any goose-specific commands
+		line = scanner.Text()
+		// Обработка аннотаций goose.
 		if strings.HasPrefix(line, sqlCmdPrefix) {
-			cmd := strings.TrimSpace(line[len(sqlCmdPrefix):])
+			cmd = strings.TrimSpace(line[len(sqlCmdPrefix):])
 			switch cmd {
-			case "Up":
-				directionIsActive = (direction == true)
+			case gooseUp:
+				directionIsActive = direction
 				upSections++
-				break
-
-			case "Down":
-				directionIsActive = (direction == false)
+			case gooseDown:
+				directionIsActive = !direction
 				downSections++
-				break
-
-			case "StatementBegin":
+			case gooseStatementBegin:
 				if directionIsActive {
 					ignoreSemicolons = true
 				}
-				break
-
-			case "StatementEnd":
+			case gooseStatementEnd:
 				if directionIsActive {
-					statementEnded = (ignoreSemicolons == true)
+					statementEnded = ignoreSemicolons
 					ignoreSemicolons = false
 				}
-				break
-
-			case "NO TRANSACTION":
+			case gooseNoTransaction:
 				tx = false
-				break
 			}
 		}
-
 		if !directionIsActive {
 			continue
 		}
-
-		if _, err := buf.WriteString(line + "\n"); err != nil {
-			log.Fatalf("io err: %v", err)
-		}
-
-		// Wrap up the two supported cases: 1) basic with semicolon; 2) psql statement
-		// Lines that end with semicolon that are in a statement block
-		// do not conclude statement.
+		_, _ = buf.WriteString(line + "\n")
+		// Завершение выражения, точка с запятой вне блока StatementBegin/End или явное окончание блока StatementEnd.
 		if (!ignoreSemicolons && endsWithSemicolon(line)) || statementEnded {
 			statementEnded = false
-			stmts = append(stmts, buf.String())
+			ret = append(ret, buf.String())
 			buf.Reset()
 		}
 	}
-
-	if err := scanner.Err(); err != nil {
-		log.Fatalf("scanning migration: %v", err)
+	if err = scanner.Err(); err != nil {
+		err = Errors().ReadMigrationFile.Bind(err)
+		return
 	}
-
-	// diagnose likely migration script errors
+	// Диагностика вероятных ошибок скрипта миграции.
 	if ignoreSemicolons {
-		log.Println("WARNING: saw '-- +goose StatementBegin' with no matching '-- +goose StatementEnd'")
+		log.Println(warnNoStatementEnd)
 	}
-
-	if bufferRemaining := strings.TrimSpace(buf.String()); len(bufferRemaining) > 0 {
-		log.Printf("WARNING: Unexpected unfinished SQL query: %s. Missing a semicolon?\n", bufferRemaining)
+	if remaining := strings.TrimSpace(buf.String()); len(remaining) > 0 {
+		log.Printf(tplUnfinished, remaining)
 	}
-
 	if upSections == 0 && downSections == 0 {
-		log.Fatalf(`ERROR: no Up/Down annotations found, so no statements were executed.
-			See https://bitbucket.org/liamstask/goose/overview for details.`)
+		err = Errors().NoAnnotations.Bind()
+		return
 	}
 
 	return
 }
 
-// Run a migration specified in raw SQL.
+// Выполнение миграции, записанной в виде SQL-скрипта.
 //
-// Sections of the script can be annotated with a special comment,
-// starting with "-- +goose" to specify whether the section should
-// be applied during an Up or Down migration
-//
-// All statements following an Up or Down directive are grouped together
-// until another direction directive is found.
-func runSQLMigration(db *sql.DB, scriptFile string, v int64, direction bool) error {
-	f, err := os.Open(scriptFile)
-	if err != nil {
-		log.Fatal(err)
+// Секции скрипта размечаются специальным комментарием, начинающимся с
+// "-- +goose", определяющим выполнение секции при прямой миграции (Up)
+// или откате (Down). Все выражения после директивы направления объединяются
+// в одну секцию до появления директивы противоположного направления.
+func runSQLMigration(db *sql.DB, scriptFile string, v int64, direction bool) (err error) {
+	var (
+		f          *os.File
+		statements []string
+		useTx      bool
+		tx         *sql.Tx
+		query      string
+		end        bool
+	)
+
+	if f, err = os.Open(scriptFile); err != nil {
+		err = Errors().OpenMigrationFile.Bind(scriptFile, err)
+		return
 	}
-	defer f.Close()
-
-	statements, useTx := getSQLStatements(f, direction)
-
+	defer func() { _ = f.Close() }()
+	if statements, useTx, err = getSQLStatements(f, direction); err != nil {
+		return
+	}
 	if useTx {
-		// TRANSACTION.
-
-		tx, err := db.Begin()
-		if err != nil {
-			log.Fatal(err)
+		if tx, err = db.Begin(); err != nil {
+			err = Errors().BeginTransaction.Bind(err)
+			return
 		}
-
-		for _, query := range statements {
+		for _, query = range statements {
+			if end {
+				break
+			}
 			if _, err = tx.Exec(query); err != nil {
-				tx.Rollback()
-				return err
+				err = Errors().ExecStatement.Bind(err)
+				end = true
 			}
 		}
-		if _, err := tx.Exec(GetDialect().insertVersionSQL(), v, direction); err != nil {
-			tx.Rollback()
-			return err
+		if !end {
+			// Запись версии миграции в лог версий.
+			if _, err = tx.Exec(GetDialect().insertVersionSQL(), v, direction); err != nil {
+				err = Errors().InsertVersion.Bind(err)
+				end = true
+			}
 		}
-
-		return tx.Commit()
+		if end {
+			_ = tx.Rollback()
+			return
+		}
+		err = tx.Commit()
+		return
 	}
-
-	// NO TRANSACTION.
-	for _, query := range statements {
-		if _, err := db.Exec(query); err != nil {
-			return err
+	// Выполнение без транзакции.
+	for _, query = range statements {
+		if end {
+			break
+		}
+		if _, err = db.Exec(query); err != nil {
+			err = Errors().ExecStatement.Bind(err)
+			end = true
 		}
 	}
-	if _, err := db.Exec(GetDialect().insertVersionSQL(), v, direction); err != nil {
-		return err
+	if end {
+		return
+	}
+	if _, err = db.Exec(GetDialect().insertVersionSQL(), v, direction); err != nil {
+		err = Errors().InsertVersion.Bind(err)
 	}
 
-	return nil
+	return
 }

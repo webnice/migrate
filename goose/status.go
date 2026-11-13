@@ -2,50 +2,68 @@ package goose
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"path/filepath"
 	"time"
 )
 
-// Status prints the status of all migrations.
-func Status(db *sql.DB, dir string) error {
-	// collect all migrations
-	migrations, err := CollectMigrations(dir, minVersion, maxVersion)
-	if err != nil {
-		return err
+// Status Вывод статуса всех миграций.
+func Status(db *sql.DB, dir string) (err error) {
+	const (
+		tplHeader    = "    Дата и время применения       -- Миграция"
+		tplDelimiter = "    ========================================="
+	)
+	var (
+		migrations Migrations
+		mig        *Migration
+	)
+
+	if migrations, err = CollectMigrations(dir, minVersion, MaxVersion); err != nil {
+		return
+	}
+	// Создание таблицы версий при работе с чистой базой данных.
+	if _, err = EnsureDBVersion(db); err != nil {
+		return
+	}
+	log.Println(tplHeader)
+	log.Println(tplDelimiter)
+	for _, mig = range migrations {
+		if err = printMigrationStatus(db, mig.Version, filepath.Base(mig.Source)); err != nil {
+			return
+		}
 	}
 
-	// must ensure that the version table exists if we're running on a pristine DB
-	if _, err := EnsureDBVersion(db); err != nil {
-		return err
-	}
-
-	log.Println("    Applied At                  Migration")
-	log.Println("    =======================================")
-	for _, migration := range migrations {
-		printMigrationStatus(db, migration.Version, filepath.Base(migration.Source))
-	}
-
-	return nil
+	return
 }
 
-func printMigrationStatus(db *sql.DB, version int64, script string) {
-	var row MigrationRecord
-	q := fmt.Sprintf("SELECT tstamp, is_applied FROM goose_db_version WHERE version_id=%d ORDER BY tstamp DESC LIMIT 1", version)
-	e := db.QueryRow(q).Scan(&row.TStamp, &row.IsApplied)
+// Вывод статуса одной миграции.
+func printMigrationStatus(db *sql.DB, version int64, script string) (err error) {
+	const (
+		tplQuery    = "SELECT tstamp, is_applied FROM goose_db_version WHERE version_id=%d ORDER BY tstamp DESC LIMIT 1"
+		tplPending  = "Ожидает"
+		tplRow      = "    %-29s -- %s"
+		tplDateTime = "02.01.2006 15:04:05 -0700 MST"
+	)
+	var (
+		row       MigrationRecord
+		appliedAt string
+		q         string
+		e         error
+	)
 
-	if e != nil && e != sql.ErrNoRows {
-		log.Fatal(e)
+	q = fmt.Sprintf(tplQuery, version)
+	if e = db.QueryRow(q).Scan(&row.TStamp, &row.IsApplied); e != nil && !errors.Is(e, sql.ErrNoRows) {
+		err = Errors().ScanMigrationStatus.Bind(version, e)
+		return
 	}
-
-	var appliedAt string
-
 	if row.IsApplied {
-		appliedAt = row.TStamp.Format(time.ANSIC)
+		appliedAt = row.TStamp.In(time.Local).Format(tplDateTime)
 	} else {
-		appliedAt = "Pending"
+		appliedAt = tplPending
 	}
+	log.Printf(tplRow, appliedAt, script)
 
-	log.Printf("    %-24s -- %v\n", appliedAt, script)
+	return
 }

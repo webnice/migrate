@@ -1,177 +1,182 @@
 # migrate
 
-[![GoDoc](https://godoc.org/github.com/webnice/migrate/goose?status.svg)](https://godoc.org/github.com/webnice/migrate/goose)
-[![CircleCI](https://circleci.com/gh/webnice/migrate/tree/v1.svg?style=svg)](https://circleci.com/gh/webnice/migrate/tree/v1)
+---
 
-[comment]: <> ([![Coverage Status]&#40;https://coveralls.io/repos/github/webnice/migrate/badge.svg?branch=v1&#41;]&#40;https://coveralls.io/github/webnice/migrate?branch=v1&#41;)
-[comment]: <> ([![Build Status]&#40;https://travis-ci.org/webnice/migrate.svg?branch=v1&#41;]&#40;https://travis-ci.org/webnice/migrate&#41;)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/webnice/migrate)](https://pkg.go.dev/github.com/webnice/migrate)
+[![Coverage Status](https://coveralls.io/repos/github/webnice/migrate/badge.svg?branch=master)](https://coveralls.io/github/webnice/migrate?branch=master)
 
-Is a database migration tool. Manage your database schema by creating incremental SQL changes or Go functions.
+### migrate
 
-Based on goose lib of `bitbucket.org/liamstask/goose`
+Инструмент миграции баз данных: управление схемой базы данных через инкрементные
+изменения на SQL или функции Go.
 
-# Supported databases
+---
 
-* mysql
-* postgres
-* cockroach
-* sqlite3
-* redshift
-* clickhouse
-* tidb
+## Описание
 
+`migrate` — это инструмент управления схемой базы данных, состоящий из
+библиотеки `goose` и готовой утилиты командной строки `gsmigrate`. Изменения
+схемы оформляются как миграции — отдельные файлы с номером версии, которые
+применяются последовательно и могут быть откачены. Состояние базы данных
+отслеживается в служебной таблице `goose_db_version`.
 
-# Install
+### Особенности
 
-	$ go get -u github.com/webnice/migrate/gsmigrate
+- Применение и откат миграций: по одной, все до последней версии, до указанной версии;
+- SQL-миграции с аннотациями `-- +goose Up` и `-- +goose Down`;
+- Поддержка сложных выражений PL/pgSQL через аннотации `StatementBegin` и `StatementEnd`;
+- Выполнение миграций внутри транзакции с возможностью отключения (`NO TRANSACTION`);
+- Go-миграции: регистрация функций через `goose.AddMigration` в собственном бинарном файле;
+- Команды `status` и `version` для контроля состояния базы данных;
+- Значения флагов по умолчанию из переменных окружения `GOOSE_DIR`, `GOOSE_DRV`, `GOOSE_DSN`;
+- Создание файлов новых миграций командой `create` без подключения к базе данных;
+- Цели `m-[driver]-[command]` в Makefile проекта для работы с миграциями;
+- Покрытие кода тестами 100% (пакет `goose`).
 
-This will install the `gsmigrate` binary to your `$GOPATH/bin` directory.
+## Требования
 
-# Usage
+- Go 1.24 или новее.
+
+## Установка
+
+```bash
+go install github.com/webnice/migrate/gsmigrate@latest
+```
+
+Подключение библиотеки:
+
+```go
+import (
+	"github.com/webnice/migrate/goose"
+)
+```
+
+#### Зависимости
+
+- `github.com/alecthomas/kingpin/v2` — разбор аргументов командной строки;
+- `github.com/ClickHouse/clickhouse-go` — драйвер ClickHouse;
+- `github.com/go-sql-driver/mysql` — драйвер MySQL;
+- `github.com/lib/pq` — драйвер PostgreSQL, CockroachDB, Redshift;
+- `github.com/mattn/go-sqlite3` — драйвер SQLite3;
+- `github.com/ziutek/mymysql` — драйвер App Engine CloudSQL.
+
+## Поддерживаемые базы данных
+
+| Диалект     | Драйвер    | Пример DSN |
+|-------------|------------|------------|
+| mysql       | mysql      | `user:password@/dbname?parseTime=true` |
+| postgres    | postgres   | `user=postgres dbname=postgres sslmode=disable` |
+| cockroach   | postgres   | `user=root dbname=default sslmode=disable` |
+| sqlite3     | sqlite3    | `./foo.db` |
+| redshift    | postgres   | `postgres://user:password@host:5439/db` |
+| clickhouse  | clickhouse | `tcp://localhost:9000?username=default&database=test` |
+| tidb        | mysql      | `user:password@/dbname?parseTime=true` |
+
+## Использование
 
 ```
 usage: gsmigrate [<flags>] <command> [<args> ...]
 
-Utility for applying database migrations
+Утилита применения миграций баз данных
 
 Flags:
-  --help         Show context-sensitive help (also try --help-long and --help-man).
-  --dir="."      Directory with migration files. Default is '.'.
-                 Overrides the default value for a flag from an environment variable by name 'GOOSE_DIR'
-  --drv="mysql"  Driver of database. Support is [mysql, postgres, sqlite3, redshift, clickhouse, tidb].
-                 Overrides the default value for a flag from an environment variable by name 'GOOSE_DRV'
+  --dir="."      Каталог с файлами миграций. Значение по умолчанию — '.'.
+                 Переопределяется значение флага по умолчанию из переменной
+                 окружения с именем 'GOOSE_DIR'
+  --drv="mysql"  Драйвер базы данных. Поддерживаются [mysql, postgres, sqlite3,
+                 redshift, clickhouse, tidb]. Переопределяет значение флага по
+                 умолчанию из переменной окружения с именем 'GOOSE_DRV'
   --dsn="root@unix(/var/run/mysql/mysql.sock)/test?parseTime=true"
-                 Database source name (DSN).
-                 Overrides the default value for a flag from an environment variable by name 'GOOSE_DSN'
+                 Строка подключения к базе данных (DSN). Переопределяет
+                 значение флага по умолчанию из переменной окружения с именем
+                 'GOOSE_DSN'
 
 Commands:
-  help [<command>...]
-    Show help.
-
-  up
-    Migrate the DB to the most recent version available
-
+  up             Применение к базе данных миграций до самой последней
+                 доступной версии
   up-to [<VERSION>]
-    Migrate the DB to a specific VERSION
-
-  down
-    Roll back the version by 1
-
+                 Применение к базе данных миграций до указанной VERSION
+  down           Откат версии на 1 назад
   down-to [<VERSION>]
-    Roll back to a specific VERSION
-
-  redo
-    Re-run the latest migration
-
-  status
-    Dump the migration status for the current DB
-
-  version
-    Print the current version of the database
-
+                 Откат миграций до указанной VERSION
+  redo           Повторное выполнение последней миграции
+  reset          Откат всех применённых миграций
+  status         Вывод статуса миграций для текущей базы данных
+  version        Вывод текущей версии базы данных
   create [<NAME>] [<TYPE>]
-    Creates new migration file with next version
+                 Создание нового файла миграции со следующей версией
 ```
-## Examples:
 
+Полную справку по командам выводит `gsmigrate --help`, справку по отдельной
+команде — `gsmigrate help <command>`.
+
+## Примеры
+
+Нижеприведённая сессия выполняется с базой данных sqlite3.
+
+Создание миграции и просмотр статуса:
+
+```bash
+$ gsmigrate --drv=sqlite3 --dsn=./foo.db create init sql
+Создан новый файл: 20261113071348_init.sql
+
+$ gsmigrate --drv=sqlite3 --dsn=./foo.db status
+    Дата и время применения       -- Миграция
+    =========================================
+    Ожидает                       -- 20261113071348_init.sql
 ```
-    gsmigrate --drv="sqlite3" --dsn="./foo.db" status
-    gsmigrate --drv="sqlite3" --dsn="./foo.db" create init sql
-    gsmigrate --drv="sqlite3" --dsn="./foo.db" create add_some_column sql
-    gsmigrate --drv="sqlite3" --dsn="./foo.db" create fetch_user_data go
-    gsmigrate --drv="sqlite3" --dsn="./foo.db" up
 
-    gsmigrate --drv="postgres" --dsn="user=postgres dbname=postgres sslmode=disable" status
-    gsmigrate --drv="mysql" --dsn="user:password@/dbname?parseTime=true" status
-    gsmigrate --drv="redshift" --dsn="postgres://user:password@qwerty.us-east-1.redshift.amazonaws.com:5439/db" status
-		gsmigrate --drv="clickhouse" --dsn="tcp://localhost:9000?username=default&database=test" status
-    gsmigrate --drv="tidb" --dsn="user:password@/dbname?parseTime=true" status
+Применение всех миграций и вывод версии:
+
+```bash
+$ gsmigrate --drv=sqlite3 --dsn=./foo.db up
+OK 20261113071348_init.sql
+
+$ gsmigrate --drv=sqlite3 --dsn=./foo.db version
+goose: версия 20261113071348
 ```
-## create
 
-Create a new SQL migration
+Применение до указанной версии:
 
-    $ gsmigrate create add_some_column sql
-    $ Created new file: YYYYMMDDhhmmss_add_some_column.sql
+```bash
+$ gsmigrate --drv=sqlite3 --dsn=./foo.db up-to 20180306100000
+OK 20180305100000_begin.sql
+OK 20180306100000_next.sql
+goose: нет миграций для выполнения. Текущая версия: 20180306100000
+```
 
-Edit the newly created file to define the behavior of your migration.
+Откат одной миграции и откат до версии:
 
-You can also create a Go migration, if you then invoke it with your own goose binary:
+```bash
+$ gsmigrate --drv=sqlite3 --dsn=./foo.db down
+OK 20180307100000_and_again.sql
 
-    $ gsmigrate create fetch_user_data go
-    $ Created new file: YYYYMMDDhhmmss_fetch_user_data.go
+$ gsmigrate --drv=sqlite3 --dsn=./foo.db down-to 20180305100000
+OK 20180307100000_and_again.sql
+OK 20180306100000_next.sql
+goose: нет миграций для выполнения. Текущая версия: 20180305100000
+```
 
-## up
+Повторное выполнение последней миграции:
 
-Apply all available migrations
+```bash
+$ gsmigrate --drv=sqlite3 --dsn=./foo.db redo
+OK 20180307100000_and_again.sql
+OK 20180307100000_and_again.sql
+```
 
-    $ gsmigrate up
-    $ OK    20180305100000_begin.sql
-    $ OK    20180306100000_next.sql
-    $ OK    20180307100000_and_again.sql
-    $ goose: no migrations to run. current version: 20180307100000
+Полный откат всех миграций:
 
-## up-to
+```bash
+$ gsmigrate --drv=sqlite3 --dsn=./foo.db reset
+OK 20180307100000_and_again.sql
+OK 20180306100000_next.sql
+OK 20180305100000_begin.sql
+```
 
-Migrate up to a specific version
+## SQL-миграции
 
-    $ gsmigrate up-to 20180306100000
-    $ OK    20180305100000_begin.sql
-    $ OK    20180306100000_next.sql
-    $ goose: no migrations to run. current version: 20180306100000
-
-## down
-
-Roll back a single migration from the current version
-
-    $ gsmigrate down
-    $ OK    20180307100000_and_again.sql
-    $ goose: no migrations to run. current version: 20180306100000
-
-## down-to
-
-Roll back migrations to a specific version
-
-    $ gsmigrate down-to 20180305100000
-    $ OK    20180307100000_and_again.sql
-    $ OK    20180306100000_next.sql
-    $ goose: no migrations to run. current version: 20180305100000
-
-## redo
-
-Roll back the most recently applied migration, then run it again
-
-    $ gsmigrate redo
-    $ -- SQL in this section is executed when the migration is rolled back..
-    $ OK    20180307100000_and_again.sql
-    $ -- SQL in this section is executed when the migration is applied..
-    $ OK    20180307100000_and_again.sql
-
-## status
-
-Print the status of all migrations:
-
-    $ gsmigrate status
-    $ Applied At                  Migration
-    $ =======================================
-    $ Wed Mar  7 14:57:35 2018 -- 20180305100000_begin.sql
-    $ Wed Mar  7 15:01:20 2018 -- 20180306100000_next.sql
-    $ Pending                  -- 20180307100000_and_again.sql
-
-## version
-
-Print the current version of the database:
-
-    $ gsmigrate version
-    $ goose: version 20180306100000
-
-# Migrations
-
-gsmigrate supports migrations written in SQL or in Go.
-
-## SQL Migrations
-
-A sample SQL migration looks like:
+Файл SQL-миграции содержит секции, размеченные аннотациями goose в комментариях:
 
 ```sql
 -- +goose Up
@@ -186,49 +191,57 @@ CREATE TABLE post (
 DROP TABLE post;
 ```
 
-Notice the annotations in the comments. Any statements following `-- +goose Up` will be executed as part of a forward migration, and any statements following `-- +goose Down` will be executed as part of a rollback.
+Выражения после `-- +goose Up` выполняются при применении миграции, после
+`-- +goose Down` — при откате. По умолчанию все миграции выполняются внутри
+транзакции. Выражения, которые не могут выполняться внутри транзакции
+(например `CREATE DATABASE`), размещаются в файле с аннотацией
+`-- +goose NO TRANSACTION` — тогда обе секции файла выполняются без транзакции.
 
-By default, all migrations are run within a transaction. Some statements like `CREATE DATABASE`, however, cannot be run within a transaction. You may optionally add `-- +goose NO TRANSACTION` to the top of your migration
-file in order to skip transactions within that specific migration file. Both Up and Down migrations within this file will be run without transactions.
-
-By default, SQL statements are delimited by semicolons - in fact, query statements must end with a semicolon to be properly recognized by goose.
-
-More complex statements (PL/pgSQL) that have semicolons within them must be annotated with `-- +goose StatementBegin` and `-- +goose StatementEnd` to be properly recognized. For example:
+По умолчанию выражения разделяются точкой с запятой и должны заканчиваться
+ею. Сложные выражения (PL/pgSQL), содержащие точки с запятой внутри себя,
+обрамляются аннотациями `-- +goose StatementBegin` и `-- +goose StatementEnd`:
 
 ```sql
 -- +goose Up
 -- +goose StatementBegin
-CREATE OR REPLACE FUNCTION histories_partition_creation( DATE, DATE )
+CREATE OR REPLACE FUNCTION histories_partition_creation(DATE, DATE)
 returns void AS $$
 DECLARE
   create_query text;
 BEGIN
   FOR create_query IN SELECT
       'CREATE TABLE IF NOT EXISTS histories_'
-      || TO_CHAR( d, 'YYYY_MM' )
+      || TO_CHAR(d, 'YYYY_MM')
       || ' ( CHECK( created_at >= timestamp '''
-      || TO_CHAR( d, 'YYYY-MM-DD 00:00:00' )
+      || TO_CHAR(d, 'YYYY-MM-DD 00:00:00')
       || ''' AND created_at < timestamp '''
-      || TO_CHAR( d + INTERVAL '1 month', 'YYYY-MM-DD 00:00:00' )
-      || ''' ) ) inherits ( histories );'
-    FROM generate_series( $1, $2, '1 month' ) AS d
+      || TO_CHAR(d + INTERVAL '1 month', 'YYYY-MM-DD 00:00:00')
+      || ''' ) ) inherits (histories);'
+    FROM generate_series($1, $2, '1 month') AS d
   LOOP
     EXECUTE create_query;
-  END LOOP;  -- LOOP END
-END;         -- FUNCTION END
+  END LOOP;
+END;
 $$
 language plpgsql;
 -- +goose StatementEnd
 ```
 
-## Go Migrations
+Имя файла миграции должно начинаться с номера версии и содержать разделитель:
+`XXX_descriptivename.sql`, где `XXX` — номер версии. Новые файлы создаются
+командой `create`, версия формируется из текущего времени в формате UTC.
 
-1. Create your own goose binary
-2. Import `github.com/webnice/migrate/goose`
-3. Register your migration functions
-4. Run goose command, ie. `goose.Up(db *sql.DB, dir string)`
+## Go-миграции
 
-A sample Go migration looks like:
+Go-миграции выполняются собственным бинарным файлом, собранным с пакетом
+`goose`. Для этого:
+
+1. Создайте собственный бинарный файл;
+2. Импортируйте `github.com/webnice/migrate/goose`;
+3. Зарегистрируйте функции миграций;
+4. Вызовите команду goose, например `goose.Up(db, dir)`.
+
+Пример Go-миграции:
 
 ```go
 package main
@@ -243,19 +256,62 @@ func init() {
 	goose.AddMigration(Up20180307100000, Down20180307100000)
 }
 
-// Up20180307100000 Migration applied
+// Up20180307100000 Миграция применена.
 func Up20180307100000(tx *sql.Tx) (err error) {
-	// This code is executed when the migration is applied.
+	// Этот код выполняется при применении миграции.
 	return
 }
 
-// Down20180307100000 Migration rolled back
+// Down20180307100000 Миграция откачена.
 func Down20180307100000(tx *sql.Tx) (err error) {
-	// This code is executed when the migration is rolled back.
+	// Этот код выполняется при откате миграции.
 	return
 }
 ```
 
-## License
+Файл Go-миграции создаётся командой `gsmigrate create <NAME> go`. Функция
+миграции получает открытую транзакцию; запись о версии вносится в лог
+автоматически после успешного выполнения функции.
 
-Licensed under [MIT License](./LICENSE)
+## Интеграция с Makefile проекта
+
+Makefile проекта поддерживает цели вида `m-[driver]-[command]`. Драйверы и
+параметры подключения описываются в файле `.env.mk` проекта:
+
+```make
+MIGRATION_DRIVER = mysql clickhouse
+
+MIGRATION_DIR_MYSQL = migration/mysql
+MIGRATION_DRV_MYSQL = mysql
+MIGRATION_DSN_MYSQL = user:password@/dbname?parseTime=true
+
+MIGRATION_DIR_CLICKHOUSE = migration/clickhouse
+MIGRATION_DRV_CLICKHOUSE = clickhouse
+MIGRATION_DSN_CLICKHOUSE = tcp://localhost:9000?username=default&database=test
+```
+
+После этого доступны цели:
+
+```bash
+make m-mysql-up        # применение всех миграций MySQL
+make m-mysql-down      # откат одной миграции MySQL
+make m-mysql-create    # создание новой миграции MySQL
+make m-mysql-status    # статус миграций MySQL
+make m-mysql-redo      # повтор последней миграции MySQL
+make m-mysql-version   # версия базы данных MySQL
+make m-clickhouse-up   # и так далее для каждого драйвера
+```
+
+## Тестирование
+
+```bash
+# Стандартный прогон с покрытием.
+go test -cover ./...
+
+# Прогон через Makefile (агрегированный профиль покрытия в coverage.log).
+make test
+```
+
+## Лицензия
+
+© WEB NICE, распространяется под [лицензией MIT](LICENSE).

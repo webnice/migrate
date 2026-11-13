@@ -38,6 +38,8 @@ github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
+github.com/webnice/dic v1.4.0 h1:QykGh77eGLS1rKniZ2F+HFRMGtw0Dfdi4s7j1smCtLw=
+github.com/webnice/dic v1.4.0/go.mod h1:1eM1bn5o2yKM5hlpGZ+LJDHihK1Iuk/VSvcAq0dHQk0=
 github.com/xhit/go-str2duration/v2 v2.2.0 h1:SofrD1D+8IuhhkP+OiG1ij4Zq+FiiYSEY/sORBanDG0=
 github.com/xhit/go-str2duration/v2 v2.2.0/go.mod h1:ohY8p+0f07DiV6Em5LKB0s2YpLtXVyJfNt1+BlmyAsU=
 github.com/ziutek/mymysql v1.5.4 h1:GB0qdRGsTwQSBVYuVShFBKaXSnSnYYC2d9knnE1LHFs=

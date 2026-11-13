@@ -10,98 +10,74 @@ import (
 	"time"
 )
 
-// Create writes a new blank migration file.
-func CreateWithTemplate(db *sql.DB, dir string, migrationTemplate *template.Template, name, migrationType string) (err error) {
-	var migrations Migrations
-	var last *Migration
-	var version, filename, fpath, path string
-	var tmpl *template.Template
+// CreateWithTemplate Создание нового файла миграции по заданному шаблону.
+// Аргумент db зарезервирован для совместимости интерфейса и не используется.
+func CreateWithTemplate(_ *sql.DB, dir string, migrationTemplate *template.Template, name, migrationType string) (err error) {
+	const (
+		versionLayout   = "20060102150405"
+		tplFileName     = "%s_%s.%s"
+		tplVersion      = "%014d"
+		migrationTypeGo = "go"
+		tplCreatedFile  = "Создан новый файл: %s"
+	)
+	var (
+		migrations Migrations
+		last       *Migration
+		version    string
+		filename   string
+		fPath      string
+		path       string
+		tmpl       *template.Template
+	)
 
-	migrations, err = CollectMigrations(dir, minVersion, maxVersion)
-	if err != nil {
+	if migrations, err = CollectMigrations(dir, minVersion, MaxVersion); err != nil {
 		return
 	}
-	version = time.Now().In(time.UTC).Format("20060102150405")
+	// Формирование версии новой миграции из текущего времени в формате UTC.
+	version = time.Now().In(time.UTC).Format(versionLayout)
 	if last, err = migrations.Last(); err == nil {
-		if fmt.Sprintf("%014d", last.Version) == version {
-			version = fmt.Sprintf("%014d", last.Version+1)
+		// Защита от повторной генерации версии в ту же секунду.
+		if fmt.Sprintf(tplVersion, last.Version) == version {
+			version = fmt.Sprintf(tplVersion, last.Version+1)
 		}
 	}
-	filename = fmt.Sprintf("%v_%v.%v", version, name, migrationType)
-	fpath = filepath.Join(dir, filename)
-	tmpl = sqlMigrationTemplate
-	if migrationType == "go" {
+	filename = fmt.Sprintf(tplFileName, version, name, migrationType)
+	fPath = filepath.Join(dir, filename)
+	if tmpl = sqlMigrationTemplate; migrationType == migrationTypeGo {
 		tmpl = goSQLMigrationTemplate
 	}
 	if migrationTemplate != nil {
 		tmpl = migrationTemplate
 	}
-	path, err = writeTemplateToFile(fpath, tmpl, version)
-	if err != nil {
+	if path, err = writeTemplateToFile(fPath, tmpl, version); err != nil {
 		return
 	}
-	log.Printf("Created new file: %s\n", path)
+	log.Printf(tplCreatedFile, path)
 
 	return
 }
 
-// Create writes a new blank migration file.
+// Create Создание нового пустого файла миграции.
 func Create(db *sql.DB, dir, name, migrationType string) error {
 	return CreateWithTemplate(db, dir, nil, name, migrationType)
 }
 
-func writeTemplateToFile(path string, t *template.Template, version string) (string, error) {
-	if _, err := os.Stat(path); !os.IsNotExist(err) {
-		return "", fmt.Errorf("failed to create file: %v already exists", path)
+// Запись шаблона миграции в файл.
+func writeTemplateToFile(path string, t *template.Template, version string) (ret string, err error) {
+	var f *os.File
+
+	if _, err = os.Stat(path); !os.IsNotExist(err) {
+		err = Errors().FileAlreadyExists.Bind(path)
+		return
 	}
-
-	f, err := os.Create(path)
-	if err != nil {
-		return "", err
+	if f, err = os.Create(path); err != nil {
+		return
 	}
-	defer f.Close()
-
-	err = t.Execute(f, version)
-	if err != nil {
-		return "", err
+	defer func() { _ = f.Close() }()
+	if err = t.Execute(f, version); err != nil {
+		return
 	}
+	ret = f.Name()
 
-	return f.Name(), nil
-}
-
-var sqlMigrationTemplate = template.Must(template.New("goose.sql-migration").Parse(
-	`-- +goose Up
--- SQL in this section is executed when the migration is applied.
-
-
-
--- +goose Down
--- SQL in this section is executed when the migration is rolled back.
-
-`))
-
-var goSQLMigrationTemplate = template.Must(template.New("goose.go-migration").Parse(
-	`package main
-
-import (
-	"database/sql"
-
-	"github.com/webnice/migrate/goose"
-)
-
-func init() {
-	goose.AddMigration(Up{{.}}, Down{{.}})
-}
-
-// Up{{.}} Migration applied
-func Up{{.}}(tx *sql.Tx) (err error) {
-	// This code is executed when the migration is applied.
 	return
 }
-
-// Down{{.}} Migration rolled back
-func Down{{.}}(tx *sql.Tx) (err error) {
-	// This code is executed when the migration is rolled back.
-	return
-}
-`))

@@ -2,113 +2,108 @@ package goose
 
 import (
 	"database/sql"
-	"errors"
-	"fmt"
 	"log"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 )
 
-// MigrationRecord struct.
-type MigrationRecord struct {
-	VersionID int64
-	TStamp    time.Time
-	IsApplied bool // was this a result of up() or down()
-}
+// String Возвращает путь к файлу миграции.
+func (m *Migration) String() string { return m.Source }
 
-// Migration struct.
-type Migration struct {
-	Version    int64
-	Next       int64  // next version, or -1 if none
-	Previous   int64  // previous version, -1 if none
-	Source     string // path to .sql script
-	Registered bool
-	UpFn       func(*sql.Tx) error // Up go migration function
-	DownFn     func(*sql.Tx) error // Down go migration function
-}
+// Up Применение миграции.
+func (m *Migration) Up(db *sql.DB) (err error) {
+	const tplOK = "OK %s"
 
-func (m *Migration) String() string {
-	return m.Source
-}
-
-// Up runs an up migration.
-func (m *Migration) Up(db *sql.DB) error {
-	if err := m.run(db, true); err != nil {
-		return err
+	if err = m.run(db, true); err != nil {
+		return
 	}
-	log.Println("OK   ", filepath.Base(m.Source))
-	return nil
+	log.Printf(tplOK, filepath.Base(m.Source))
+
+	return
 }
 
-// Down runs a down migration.
-func (m *Migration) Down(db *sql.DB) error {
-	if err := m.run(db, false); err != nil {
-		return err
+// Down Откат миграции.
+func (m *Migration) Down(db *sql.DB) (err error) {
+	const tplOK = "OK %s"
+
+	if err = m.run(db, false); err != nil {
+		return
 	}
-	log.Println("OK   ", filepath.Base(m.Source))
-	return nil
+	log.Printf(tplOK, filepath.Base(m.Source))
+
+	return
 }
 
-func (m *Migration) run(db *sql.DB, direction bool) error {
+// Выполнение миграции в указанном направлении.
+func (m *Migration) run(db *sql.DB, direction bool) (err error) {
+	var (
+		tx *sql.Tx
+		fn func(*sql.Tx) error
+	)
+
 	switch filepath.Ext(m.Source) {
-	case ".sql":
-		if err := runSQLMigration(db, m.Source, m.Version, direction); err != nil {
-			return fmt.Errorf("FAIL %v, quitting migration", err)
+	case extensionSQL:
+		if err = runSQLMigration(db, m.Source, m.Version, direction); err != nil {
+			err = Errors().MigrationFail.Bind(m.Source, err)
+			return
 		}
-
-	case ".go":
+	case extensionGo:
 		if !m.Registered {
-			log.Fatalf("failed to apply Go migration %q: Go functions must be registered and built into a custom binary", m.Source)
+			err = Errors().GoMigrationNotRegistered.Bind(m.Source)
+			return
 		}
-		tx, err := db.Begin()
-		if err != nil {
-			log.Fatal("db.Begin: ", err)
+		if tx, err = db.Begin(); err != nil {
+			err = Errors().BeginTransaction.Bind(err)
+			return
 		}
-
-		fn := m.UpFn
+		fn = m.UpFn
 		if !direction {
 			fn = m.DownFn
 		}
 		if fn != nil {
-			if err := fn(tx); err != nil {
-				tx.Rollback()
-				log.Fatalf("FAIL %s (%v), quitting migration.", filepath.Base(m.Source), err)
-				return err
+			if err = fn(tx); err != nil {
+				_ = tx.Rollback()
+				err = Errors().MigrationFunc.Bind(filepath.Base(m.Source), err)
+				return
 			}
 		}
-		if _, err := tx.Exec(GetDialect().insertVersionSQL(), m.Version, direction); err != nil {
-			tx.Rollback()
-			return err
+		if _, err = tx.Exec(GetDialect().insertVersionSQL(), m.Version, direction); err != nil {
+			_ = tx.Rollback()
+			err = Errors().InsertVersion.Bind(err)
+			return
 		}
-
-		return tx.Commit()
+		err = tx.Commit()
 	}
 
-	return nil
+	return
 }
 
-// NumericComponent looks for migration scripts with names in the form:
-// XXX_descriptivename.ext where XXX specifies the version number
-// and ext specifies the type of migration
-func NumericComponent(name string) (int64, error) {
+// NumericComponent Извлекает номер версии из имени файла миграции вида
+// XXX_descriptivename.ext, где XXX — номер версии, ext — тип миграции.
+func NumericComponent(name string) (ret int64, err error) {
+	var (
+		base string
+		ext  string
+		idx  int
+	)
 
-	base := filepath.Base(name)
-
-	if ext := filepath.Ext(base); ext != ".go" && ext != ".sql" {
-		return 0, errors.New("not a recognized migration file type")
+	base = filepath.Base(name)
+	if ext = filepath.Ext(base); ext != extensionSQL && ext != extensionGo {
+		err = Errors().NotMigrationFile.Bind()
+		return
+	}
+	if idx = strings.Index(base, "_"); idx < 0 {
+		err = Errors().NoSeparator.Bind()
+		return
+	}
+	if ret, err = strconv.ParseInt(base[:idx], 10, 64); err != nil {
+		err = Errors().ParseVersion.Bind(err)
+		return
+	}
+	if ret <= 0 {
+		err = Errors().NotPositiveVersion.Bind()
 	}
 
-	idx := strings.Index(base, "_")
-	if idx < 0 {
-		return 0, errors.New("no separator found")
-	}
-
-	n, e := strconv.ParseInt(base[:idx], 10, 64)
-	if e == nil && n <= 0 {
-		return 0, errors.New("migration IDs must be greater than zero")
-	}
-
-	return n, e
+	return
 }

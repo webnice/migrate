@@ -2,46 +2,84 @@ package main
 
 import "github.com/alecthomas/kingpin/v2"
 
-func args() (cmd string, args *Args) {
-	args = new(Args)
-	kingpin.CommandLine.Help = `Utility for applying database migrations`
+// Разбор аргументов командной строки.
+func args(argv []string) (cmd string, ret *Args, err error) {
+	const (
+		flagNameDirectory = "dir"
+		flagNameDriver    = "drv"
+		flagNameDsn       = "dsn"
+		cmdNameUp         = "up"
+		cmdNameUpTo       = "up-to"
+		cmdNameDown       = "down"
+		cmdNameDownTo     = "down-to"
+		cmdNameRedo       = "redo"
+		cmdNameReset      = "reset"
+		cmdNameStatus     = "status"
+		cmdNameVersion    = "version"
+		cmdNameCreate     = "create"
+		argNameVersion    = "VERSION"
+		argNameCreateName = "NAME"
+		argNameCreateType = "TYPE"
+	)
+	var (
+		app  *kingpin.Application
+		help bool
+		arg  string
+	)
 
-	// Global flags
-	kingpin.Flag(`dir`, `Directory with migration files. Default is '.'. Overrides the default value for a flag from an environment variable by name 'GOOSE_DIR'`).
-		Envar(`GOOSE_DIR`).
-		Default(".").
-		StringVar(&args.Directory)
-	kingpin.Flag(`drv`, `Driver of database. Support is [mysql, postgres, sqlite3, redshift, clickhouse, tidb]. Overrides the default value for a flag from an environment variable by name 'GOOSE_DRV'`).
-		Envar("GOOSE_DRV").
-		Default("mysql").
-		StringVar(&args.Driver)
-	kingpin.Flag(`dsn`, `Database source name (DSN). Overrides the default value for a flag from an environment variable by name 'GOOSE_DSN'`).
-		Envar(`GOOSE_DSN`).
-		Default(`root@unix(/var/run/mysql/mysql.sock)/test?parseTime=true`).
-		StringVar(&args.Dsn)
-
-	// Commands with args
-	args.Up = kingpin.Command(`up`, `Migrate the DB to the most recent version available`)
-	args.UpTo = kingpin.Command(`up-to`, `Migrate the DB to a specific VERSION`)
-	args.UpTo.Arg(`VERSION`, `Specific migration VERSION`).
+	ret = new(Args)
+	// Определение запроса справки до разбора аргументов.
+	for _, arg = range argv {
+		if arg == "--help" || arg == "-h" {
+			help = true
+		}
+	}
+	app = kingpin.New(appName, appHelp)
+	// Завершение процесса выполняется только из точки входа.
+	app.Terminate(terminate)
+	// Глобальные флаги.
+	app.Flag(flagNameDirectory, flagHelpDirectory).
+		Envar(envDirectory).
+		Default(defaultDirectory).
+		StringVar(&ret.Directory)
+	app.Flag(flagNameDriver, flagHelpDriver).
+		Envar(envDriver).
+		Default(defaultDriver).
+		StringVar(&ret.Driver)
+	app.Flag(flagNameDsn, flagHelpDsn).
+		Envar(envDsn).
+		Default(defaultDsn).
+		StringVar(&ret.Dsn)
+	// Команды с аргументами.
+	ret.Up = app.Command(cmdNameUp, cmdHelpUp)
+	ret.UpTo = app.Command(cmdNameUpTo, cmdHelpUpTo)
+	ret.UpTo.Arg(argNameVersion, argHelpVersion).
 		Default("").
-		StringVar(&args.UpDownVersion)
-	args.Down = kingpin.Command(`down`, `Roll back the version by 1`)
-	args.DownTo = kingpin.Command(`down-to`, `Roll back to a specific VERSION`)
-	args.DownTo.Arg(`VERSION`, `Specific migration VERSION`).
+		StringVar(&ret.UpDownVersion)
+	ret.Down = app.Command(cmdNameDown, cmdHelpDown)
+	ret.DownTo = app.Command(cmdNameDownTo, cmdHelpDownTo)
+	ret.DownTo.Arg(argNameVersion, argHelpVersion).
 		Default("").
-		StringVar(&args.UpDownVersion)
-	args.Redo = kingpin.Command(`redo`, `Re-run the latest migration`)
-	args.Status = kingpin.Command(`status`, `Dump the migration status for the current DB`)
-	args.Version = kingpin.Command(`version`, `Print the current version of the database`)
-	args.Create = kingpin.Command(`create`, `Creates new migration file with next version`)
-	args.Create.Arg(`NAME`, `NAME of new migration file. Default name is 'new'`).
-		Default("new").
-		StringVar(&args.CreateName)
-	args.Create.Arg(`TYPE`, `Type of new migration file [sql|go]. Default type is 'sql'`).
-		Default("sql").
-		StringVar(&args.CreateType)
-	cmd = kingpin.Parse()
+		StringVar(&ret.UpDownVersion)
+	ret.Redo = app.Command(cmdNameRedo, cmdHelpRedo)
+	ret.Reset = app.Command(cmdNameReset, cmdHelpReset)
+	ret.Status = app.Command(cmdNameStatus, cmdHelpStatus)
+	ret.Version = app.Command(cmdNameVersion, cmdHelpVersion)
+	ret.Create = app.Command(cmdNameCreate, cmdHelpCreate)
+	ret.Create.Arg(argNameCreateName, argHelpCreateName).
+		Default(defaultName).
+		StringVar(&ret.CreateName)
+	ret.Create.Arg(argNameCreateType, argHelpCreateType).
+		Default(defaultType).
+		StringVar(&ret.CreateType)
+	if cmd, err = app.Parse(argv); err != nil {
+		if help {
+			// Справка выведена kingpin — завершение без ошибки.
+			terminate(0)
+			return
+		}
+		terminate(1)
+	}
 
 	return
 }

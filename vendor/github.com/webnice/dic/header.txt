@@ -1,0 +1,155 @@
+AIm                             | A-IM                                 | RFC3229. Допустимые манипуляции с экземпляром запроса. Пример: A-IM: feed.
+Accept                          | Accept                               | HTTP/1.0. Список допустимых форматов ресурса.
+AcceptCh                        | Accept-CH                            | HTTP/1.1. Может быть установлен сервером, чтобы указать, какие заголовки клиентских подсказок клиент должен включать в последующие запросы.
+AcceptCharset                   | Accept-Charset                       | HTTP/1.0. Перечень поддерживаемых кодировок для предоставления пользователю.
+AcceptEncoding                  | Accept-Encoding                      | HTTP/1.0. Перечень поддерживаемых способов кодирования содержимого сущности при передаче.
+AcceptLanguage                  | Accept-Language                      | HTTP/1.0. Список поддерживаемых естественных языков.
+AcceptPatch                     | Accept-Patch                         | HTTP/1.1. Указывает MIME тип контента, который сервер может принять в запросе методом PATCH. Пример: Accept-Patch: application/example, text/example;charset=utf-8.
+AcceptPost                      | Accept-Post                          | HTTP/1.1. Указывает MIME тип контента, который сервер может принять в запросе методом POST. Пример: Accept-Post: image/webp.
+AcceptRanges                    | Accept-Ranges                        | HTTP/1.1. Перечень единиц измерения диапазонов.
+AccessControlAllowCredentials   | Access-Control-Allow-Credentials     | HTTP/1.1. Разрешает браузеру предоставлять доступ к ответу сервера JavaScript скриптам. Пример: Access-Control-Allow-Credentials: true.
+AccessControlAllowHeaders       | Access-Control-Allow-Headers         | HTTP/1.1. Указывает заголовки, которые можно использовать в запросах. Пример: Access-Control-Allow-Headers: X-Custom-Header, Upgrade-Insecure-Requests.
+AccessControlAllowMethods       | Access-Control-Allow-Methods         | HTTP/1.1. Указывает методы запросов, которые можно использовать в запросах к серверу. Пример: Access-Control-Allow-Methods: POST, GET, OPTIONS.
+AccessControlAllowOrigin        | Access-Control-Allow-Origin          | HTTP/1.1. Указывает источники, которые могут выполнять запросы к серверу. Пример: Access-Control-Allow-Origin: https://developer.mozilla.org.
+AccessControlExposeHeaders      | Access-Control-Expose-Headers        | HTTP/1.1. Указывает браузеру, какие заголовки могут быть доступны JavaScript скриптам. Пример: Access-Control-Expose-Headers: Content-Encoding, WD-Revision.
+AccessControlMaxAge             | Access-Control-Max-Age               | HTTP/1.1. Указывает время (в секундах), в течение которого браузер может кешировать ответ сервера. Пример: Access-Control-Max-Age: 600.
+AccessControlRequestHeaders     | Access-Control-Request-Headers       | HTTP/1.1. Заголовок используется браузерами, чтобы выяснить, какие заголовки принимает сервер от JavaScript скриптов. Пример: Access-Control-Request-Headers: X-Requested-With, Content-Type.
+AccessControlRequestMethod      | Access-Control-Request-Method        | HTTP/1.1. Заголовок используется браузерами, чтобы выяснить, какие HTTP методы принимает сервер от JavaScript скриптов. Пример: Access-Control-Request-Method: POST.
+Age                             | Age                                  | HTTP/1.1. Количество секунд с момента модификации ресурса.
+Allow                           | Allow                                | HTTP/1.0. Список поддерживаемых методов.
+AltSvc                          | Alt-Svc                              | HTTP/1.1. Заголовок позволяет серверу указать другое авторитетное местонахождение запрашиваемого ресурса. Пример: Alt-Svc: h3-25=":443"; ma=3600, h2=":443"; ma=3600.
+AltUsed                         | Alt-Used                             | HTTP/1.1. Используется для идентификации альтернативного местонахождения ресурса, по аналогии с заголовком Host. Пример: Alt-Used: alternate.example.net:443.
+Alternates                      | Alternates                           | HTTP/1.1. Указание на альтернативные способы представления ресурса.
+Authorization                   | Authorization                        | HTTP-Auth. Данные для авторизации.
+CacheControl                    | Cache-Control                        | HTTP/1.1. Основные директивы для управления кэшированием.
+ClearSiteData                   | Clear-Site-Data                      | HTTP/1.1. Указывает браузеру какие данные необходимо очистить после получения данных. Пример: Clear-Site-Data: "cache", "cookies".
+Connection                      | Connection                           | HTTP/1.1. Сведения о проведении соединения.
+ContentDisposition              | Content-Disposition                  | CDH. Способ распределения сущностей в сообщении при передаче нескольких фрагментов.
+ContentEncoding                 | Content-Encoding                     | HTTP/1.0. Способ кодирования содержимого сущности при передаче.
+ContentLanguage                 | Content-Language                     | HTTP/1.0. Один или несколько естественных языков содержимого сущности.
+ContentLength                   | Content-Length                       | HTTP/1.0. Размер содержимого сущности в октетах (которые в русском языке обычно называют байтами).
+ContentLocation                 | Content-Location                     | HTTP/1.1. Альтернативное расположение содержимого сущности.
+ContentMd5                      | Content-MD5                          | MD5H. Base64 MD5-хэша сущности для проверки целостности.
+ContentRange                    | Content-Range                        | HTTP/1.1. Байтовые диапазоны передаваемой сущности если возвращается фрагмент.
+ContentSecurityPolicy           | Content-Security-Policy              | HTTP/1.1. Указывает браузеру какие ресурсы разрешено запрашивать из JavaScript скриптов. Пример: Content-Security-Policy: default-src 'self' http://example.com; connect-src 'none'.
+ContentSecurityPolicyReportOnly | Content-Security-Policy-Report-Only  | HTTP/1.1. Отслеживание нарушений политик запросов из скриптов без блокировки. Вместо этого браузер отправляет на сервер отчёты о нарушениях. Пример: Content-Security-Policy: default-src https:; report-to /csp-violation-report-endpoint/.
+ContentType                     | Content-Type                         | HTTP/1.0. Формат и способ представления сущности.
+ContentVersion                  | Content-Version                      | HTTP/1.1. Информация о текущей версии сущности.
+Cookie                          | Cookie                               | HTTP/1.0. Передача на сервер сохранённых печенек.
+CrossOriginEmbedderPolicy       | Cross-Origin-Embedder-Policy         | HTTP/1.1. Настраивает встраиваемые ресурсы в документ. Пример: Cross-Origin-Embedder-Policy: require-corp.
+CrossOriginOpenerPolicy         | Cross-Origin-Opener-Policy           | HTTP/1.1. Настройки изоляции документа. Смотреть документацию по атакам XS-Leaks.
+CrossOriginResourcePolicy       | Cross-Origin-Resource-Policy         | HTTP/1.1. Настройки блокировки запросов CORS.
+Date                            | Date                                 | HTTP/1.0. Дата генерации отклика.
+DeviceMemory                    | Device-Memory                        | HTTP/1.1. Указывает приблизительный объём памяти устройства в гигабайтах. Используется только в TLS и после регистрации Accept-CH или Vary.
+DerivedFrom                     | Derived-From                         | HTTP/1.1. Информация о текущей версии сущности.
+ETag                            | ETag                                 | HTTP/1.1. Тег (уникальный идентификатор) версии сущности, используемый при кэшировании.
+Expect                          | Expect                               | HTTP/1.1v2. Указывает серверу, что клиент ожидает от него дополнительного действия.
+Forwarded                       | Forwarded                            | RFC7239. Раскрывает исходную информацию о клиенте, при передаче запроса через прокси сервер.
+Expires                         | Expires                              | HTTP/1.0. Дата предполагаемого истечения срока актуальности сущности.
+From                            | From                                 | HTTP/1.1. Адрес электронной почты ответственного лица со стороны клиента.
+Host                            | Host                                 | HTTP/1.1. Доменное имя и порт хоста запрашиваемого ресурса. Необходимо для поддержки виртуального хостинга на серверах.
+Http2Settings                   | HTTP2-Settings                       | RFC7540, RFC9113. Запрос обновления протокола с HTTP/1.1 на HTTP/2. Пример: HTTP2-Settings: token64.
+IfMatch                         | If-Match                             | HTTP/1.1. Список тегов версий сущности. Выполнять метод, если они существуют.
+IfModifiedSince                 | If-Modified-Since                    | HTTP/1.0. Дата. Выполнять метод если сущность изменилась с указанного момента.
+IfNoneMatch                     | If-None-Match                        | HTTP/1.1. Список тегов версий сущности. Выполнять метод если ни одного из них не существует.
+IfRange                         | If-Range                             | HTTP/1.1. Список тегов версий сущности или дата для определённого фрагмента сущности.
+IfUnmodifiedSince               | If-Unmodified-Since                  | HTTP/1.1. Дата. Выполнять метод если сущность не изменилась с указанной даты.
+KeepAlive                       | Keep-Alive                           | HTTP/1.1. Информирование о возможности установки длительного соединения, максимального количества запросов по нему и тайм-аута.
+LastModified                    | Last-Modified                        | HTTP/1.0. Дата последней модификации сущности.
+Link                            | Link                                 | HTTP/1.0. Указывает на логически связанный с сущностью ресурс аналогично тегу <LINK> в HTML.
+Location                        | Location                             | HTTP/1.0. URI по которому клиенту следует перейти или URI созданного ресурса.
+MaxForwards                     | Max-Forwards                         | HTTP/1.1. Максимально допустимое количество переходов через прокси.
+MimeVersion                     | MIME-Version                         | MIME. Версия протокола MIME, по которому было сформировано сообщение.
+MsEchoRequest                   | Ms-Echo-Request                      | Заголовок перечисления полей, которыми необходимо дополнить запрос и повторить его.
+Origin                          | Origin                               | HTTP/1.0. Указывает источник, схема, хост, порт, вызвавшего запрос. Пример: Origin: http://developer.mozilla.org:80.
+PermissionsPolicy               | Permissions-Policy                   | HTTP/1.1. Указывает браузеру разрешение для ресурса на использование в iframe.
+Pragma                          | Pragma                               | HTTP/1.0. Особенные опции выполнения операции.
+Prefer                          | Prefer                               | RFC7240. Запрос от клиента к серверу о выполнении определённых действий над передаваемыми данными запроса. Пример: Prefer: return=representation.
+ProxyAuthenticate               | Proxy-Authenticate                   | HTTP-Auth. Параметры аутентификации на прокси-сервере.
+ProxyAuthorization              | Proxy-Authorization                  | HTTP-Auth. Информация для авторизации на прокси-сервере.
+Public                          | Public                               | HTTP/1.1. Список доступных методов аналогично Allow, но для всего сервера.
+Range                           | Range                                | HTTP/1.1. Байтовые диапазоны для запроса фрагментов ресурса. Подробности: Частичные GET.
+Referer                         | Referer                              | HTTP/1.0. URI ресурса, после которого клиент сделал текущий запрос.
+RetryAfter                      | Retry-After                          | HTTP/1.0. Дата или время в секундах после которого можно повторить запрос.
+Server                          | Server                               | HTTP/1.0. Список названий и версий веб-сервера и его компонентов с комментариями. Для прокси-серверов поле Via.
+SetCookie                       | Set-Cookie                           | HTTP/1.0. Заголовок установки печенек.
+SourceMap                       | SourceMap                            | HTTP/1.1. Указывает браузеру местонахождение карты исходных кодов. Пример: SourceMap: /path/to/file.js.map.
+StrictTransportSecurity         | Strict-Transport-Security            | HTTP/1.1. Информирует браузер о том что доступ к ресурсу должен осуществляться только через HTTPS. Пример: Strict-Transport-Security: max-age=31536000; includeSubDomains.
+Status                          | Status                               | RFC9110. Заголовок CGI скриптов, указывающий статус HTTP ответа. Пример: Status: 200 OK.
+Title                           | Title                                | HTTP/1.0. Заголовок сущности.
+Te                              | TE                                   | HTTP/1.1v2. Список расширенных способов кодирования при передаче. Пример: TE: trailers, deflate.
+Trailer                         | Trailer                              | HTTP/1.1v2. Список полей, имеющих отношение к кодированию сообщения при передаче.
+TransferEncoding                | Transfer-Encoding                    | HTTP/1.1. Список способов кодирования, которые были применены к сообщению для передачи. Пример: chunked.
+Upgrade                         | Upgrade                              | HTTP/1.1. Список предлагаемых клиентом протоколов. Сервер указывает один протокол.
+UpgradeInsecureRequests         | Upgrade-Insecure-Requests            | HTTP/1.1. Заголовок готовности клиента перейти на TLS соединение. Пример: Upgrade-Insecure-Requests: 1.
+UserAgent                       | User-Agent                           | HTTP/1.0. Список названий и версий клиента и его компонентов с комментариями.
+Vary                            | Vary                                 | HTTP/1.1. Список описывающих ресурс полей из запроса, которые были приняты во внимание.
+Via                             | Via                                  | HTTP/1.1. Список версий протокола, названий и версий прокси-серверов, через которых прошло сообщение.
+Warning                         | Warning                              | HTTP/1.1. Код, агент, сообщение и дата, если возникла критическая ситуация. Пример: Warning: 199 Miscellaneous warning.
+WwwAuthenticate                 | WWW-Authenticate                     | HTTP-Auth. Параметры аутентификации для выполнения метода к указанному ресурсу.
+XFrameOptions                   | X-Frame-Options                      | HTTP/1.1. Указывает браузеру разрешение для ресурса на использование в iframe.
+XContentDuration                | X-Content-Duration                   | Продолжительность аудио или видео в секундах.
+XPoweredBy                      | X-Powered-By                         | Указывает технологию, фреймворк или иное ПО, используемое сервером.
+XRedirectBy                     | X-Redirect-By                        | Указывает компонент отвечающий за перенаправление ресурса.
+XRequestId                      | X-Request-ID                         | Сопоставление или идентификация запросов между клиентом и сервером.
+XConnectionType                 | X-Connection-Type                    | Тип подключения, значения: ["3g", "wifi", "cable", "broadband", ...].
+XInternetServiceProvider        | X-Internet-Service-Provider          | Расширенная сегментация типа подключения по ISP (интернет-провайдер).
+XCarrier                        | X-Carrier                            | Расширенный тип мобильного трафика, значения: ["tele2", "mts", ...].
+XTimeZone                       | X-Time-Zone                          | Смещение часового пояса. Значения: [0, 3, -1, 12, ...].
+XDayOfWeek                      | X-Day-Of-Week                        | День недели, значения: [0,1,2,3,4,5,6] 0=пн, -1=неизвестен.
+XGeoContinent                   | X-Geo-Continent                      | Географический континент.
+XGeoRegion                      | X-Geo-Region                         | Географический регион.
+XGeoCountry                     | X-Geo-Country                        | Страна.
+XGeoCity                        | X-Geo-City                           | Город.
+XDeviceManufacturer             | X-Device-Manufacturer                | Производитель или марка устройства.
+XDeviceModel                    | X-Device-Model                       | Модель устройства.
+XScreenSize                     | X-Screen-Size                        | Разрешение экрана.
+XProxyType                      | X-ProxyType                          | Тип прокси, значения: ["vpn", "tor", "dch", "pub", "web"].
+XRedefinitionDeny               | X-Redefinition-Deny                  | Запрет переопределения значений маркеров, значения: ["all", "query", "path", "entrypoint"].
+AutoSubmitted                   | Auto-Submitted                       | Mail MIME. Заголовок автоматической обработки писем или автоматически созданных писем.
+XAutoResponseSuppress           | X-Auto-Response-Suppress             | Mail MIME. Заголовок подавления автоматического ответа на письмо.
+DeliveredTo                     | Delivered-To                         | Mail MIME. Заголовок добавляемый почтовым сервером при обработке входящего письма.
+MessageId                       | Message-Id                           | Mail MIME. Уникальный идентификатор письма.
+Received                        | Received                             | Mail MIME. Заголовок добавляемый почтовым сервером, указывает источник получения письма.
+ReturnPath                      | Return-Path                          | Mail MIME. Адрес, на который необходимо вернуть письмо в случае ошибок доставки.
+Priority                        | Priority                             | Mail MIME. Приоритет письма.
+XPriority                       | X-Priority                           | Mail MIME. Приоритет письма.
+XMsMailPriority                 | X-MSMail-Priority                    | Mail MIME. Приоритет письма.
+Importance                      | Importance                           | RFC4021. Mail MIME.
+XFailedRecipients               | X-Failed-Recipients                  | Mail MIME. Список адресов получателей, которым не удалось доставить сообщение.
+XRequestedWith                  | X-Requested-With                     | Заголовок используется для контроля CORS запросов.
+Precedence                      | Precedence                           | Mail MIME. Заголовок почтовых рассылок. Документация на mail.ru или Mailchimp.
+XProjectId                      | X-Project-Id                         | Уникальный идентификатор проекта.
+XCaptchaType                    | X-Captcha-Type                       | Тип передаваемой капчи.
+XRecaptchaSiteKey               | X-Recaptcha-Site-Key                 | Ключ домена от сервиса reCaptcha.
+XRegistrationInviteCode         | X-Registration-Invite-Code           | Код приглашения на регистрацию.
+XCorrelationId                  | X-Correlation-ID                     | Сопоставление или идентификация запросов между клиентом и сервером.
+XXssProtection                  | X-XSS-Protection                     | Фильтр запросов от скриптов выполняемых между разными доменами (XSS).
+XForwardedFor                   | X-Forwarded-For                      | Nginx. Полученное nginx значение заголовка X-Forwarded-For. Если заголовок не передавался, тогда равен IP-адресу клиента. Пример: X-Forwarded-For $proxy_add_x_forwarded_for.
+XForwardedProto                 | X-Forwarded-Proto                    | Nginx. Схема. Значения: ["http", "https"]. Пример: X-Forwarded-Proto $scheme.
+XScheme                         | X-Scheme                             | Nginx. Схема. Значения: ["http", "https"]. Пример: X-Scheme $scheme.
+XRealIP                         | X-Real-IP                            | Nginx. IP адрес клиента. Пример: X-Real-IP $remote_addr.
+XUserAgent                      | X-User-Agent                         | Аналог User-Agent.
+XContentTypeOptions             | X-Content-Type-Options               | HTTP/1.1. Запрет браузеру угадывания MIME типа контента по содержимому (MIME-sniffing). Пример: X-Content-Type-Options: nosniff.
+ReferrerPolicy                  | Referrer-Policy                      | HTTP/1.1. Управление объёмом сведений о referrer, передаваемых в заголовке Referer последующих запросов. Пример: Referrer-Policy: strict-origin-when-cross-origin.
+XForwardedHost                  | X-Forwarded-Host                     | Nginx. Доменное имя и порт исходного запроса, полученного прокси. Пример: X-Forwarded-Host $host.
+XForwardedPort                  | X-Forwarded-Port                     | Nginx. Порт исходного запроса, полученного прокси. Пример: X-Forwarded-Port $server_port.
+SecWebSocketKey                 | Sec-WebSocket-Key                    | RFC6455. Ключ рукопожатия WebSocket от клиента.
+SecWebSocketAccept              | Sec-WebSocket-Accept                 | RFC6455. Подтверждение ключа рукопожатия WebSocket от сервера.
+SecWebSocketExtensions          | Sec-WebSocket-Extensions             | RFC6455. Список расширений протокола WebSocket.
+SecWebSocketProtocol            | Sec-WebSocket-Protocol               | RFC6455. Выбранный подпротокол WebSocket. Пример: Sec-WebSocket-Protocol: chat.
+SecWebSocketVersion             | Sec-WebSocket-Version                | RFC6455. Версия протокола WebSocket. Пример: Sec-WebSocket-Version: 13.
+SecFetchDest                    | Sec-Fetch-Dest                       | Fetch Metadata. Назначение запроса. Пример: Sec-Fetch-Dest: document.
+SecFetchMode                    | Sec-Fetch-Mode                       | Fetch Metadata. Режим запроса. Пример: Sec-Fetch-Mode: navigate.
+SecFetchSite                    | Sec-Fetch-Site                       | Fetch Metadata. Отношение источника запроса к источнику ресурса. Пример: Sec-Fetch-Site: cross-site.
+SecFetchUser                    | Sec-Fetch-User                       | Fetch Metadata. Инициирован ли запрос действиями пользователя. Пример: Sec-Fetch-User: ?1.
+SecChUa                         | Sec-CH-UA                            | Client Hints. Марка и значительная версия браузера пользователя. Пример: Sec-CH-UA: "Chromium";v="131".
+SecChUaMobile                   | Sec-CH-UA-Mobile                     | Client Hints. Признак мобильного устройства пользователя. Пример: Sec-CH-UA-Mobile: ?0.
+SecChUaPlatform                 | Sec-CH-UA-Platform                   | Client Hints. Платформа устройства пользователя. Пример: Sec-CH-UA-Platform: "macOS".
+SecChUaFullVersionList          | Sec-CH-UA-Full-Version-List          | Client Hints. Полный список версий браузера и его совместимых вариантов. Пример: Sec-CH-UA-Full-Version-List: "Chromium";v="131.0.0.0".
+ServerTiming                    | Server-Timing                        | W3C. Метрики производительности сервера по запросу. Пример: Server-Timing: db;dur=53.
+TimingAllowOrigin               | Timing-Allow-Origin                  | W3C. Разрешение чтения атрибутов времени загрузки ресурса из других источников. Пример: Timing-Allow-Origin: *.
+RateLimitLimit                  | RateLimit-Limit                      | IETF RateLimit. Емкость квоты запросов клиента. Пример: RateLimit-Limit: 100.
+RateLimitRemaining              | RateLimit-Remaining                  | IETF RateLimit. Оставшееся количество запросов до исчерпания квоты. Пример: RateLimit-Remaining: 42.
+RateLimitReset                  | RateLimit-Reset                      | IETF RateLimit. Время до сброса квоты запросов клиента. Пример: RateLimit-Reset: 30.
+ListUnsubscribe                 | List-Unsubscribe                     | RFC2369, RFC8058. Адрес или способ отписки от почтовой рассылки. Пример: List-Unsubscribe: <https://example.com/unsub>.

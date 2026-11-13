@@ -1,0 +1,44 @@
+## Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+
+## IDE
+.project
+.settings
+.idea
+
+## Folders
+_obj
+_test
+_dev
+/logs
+/log
+/storage
+/tmp
+/rpmbuild
+
+## Services
+/.coveralls
+
+## Architecture specific extensions/prefixes
+*.[568vq]
+[568vq].out
+
+*.cgo1.go
+*.cgo2.c
+_cgo_defun.c
+_cgo_gotypes.go
+_cgo_export.*
+_testmain.go
+
+*.exe
+*.test
+*.prof
+
+## Binaries
+/bin/
+/pkg/
+
+## Dependences
+/*.log

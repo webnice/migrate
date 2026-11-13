@@ -2,278 +2,289 @@ package goose
 
 import (
 	"database/sql"
-	"errors"
-	"fmt"
-	"log"
 	"os"
 	"path/filepath"
-	"runtime"
+	"slices"
 	"sort"
+	"strings"
 )
 
-var (
-	// ErrNoCurrentVersion when a current migration version is not found.
-	ErrNoCurrentVersion = errors.New("no current version found")
-	// ErrNoNextVersion when the next migration version is not found.
-	ErrNoNextVersion = errors.New("no next version found")
-	// MaxVersion is the maximum allowed version.
-	MaxVersion int64 = 9223372036854775807 // max(int64)
+// Len Возвращает количество миграций в списке.
+func (ms Migrations) Len() int { return len(ms) }
 
-	registeredGoMigrations = map[int64]*Migration{}
-)
-
-// Migrations slice.
-type Migrations []*Migration
-
-// helpers so we can use pkg sort
-func (ms Migrations) Len() int      { return len(ms) }
+// Swap Меняет местами две миграции списка.
 func (ms Migrations) Swap(i, j int) { ms[i], ms[j] = ms[j], ms[i] }
-func (ms Migrations) Less(i, j int) bool {
-	if ms[i].Version == ms[j].Version {
-		log.Fatalf("goose: duplicate version %v detected:\n%v\n%v", ms[i].Version, ms[i].Source, ms[j].Source)
-	}
-	return ms[i].Version < ms[j].Version
-}
 
-// Current gets the current migration.
-func (ms Migrations) Current(current int64) (*Migration, error) {
+// Less Сравнивает номера версий двух миграций списка.
+func (ms Migrations) Less(i, j int) bool { return ms[i].Version < ms[j].Version }
+
+// Current Возвращает миграцию с указанной версией.
+func (ms Migrations) Current(current int64) (ret *Migration, err error) {
 	for i, migration := range ms {
 		if migration.Version == current {
-			return ms[i], nil
+			ret = ms[i]
+			return
 		}
 	}
+	err = Errors().NoCurrentVersion.Bind()
 
-	return nil, ErrNoCurrentVersion
+	return
 }
 
-// Next gets the next migration.
-func (ms Migrations) Next(current int64) (*Migration, error) {
+// Next Возвращает миграцию следующую за указанной версией.
+func (ms Migrations) Next(current int64) (ret *Migration, err error) {
 	for i, migration := range ms {
 		if migration.Version > current {
-			return ms[i], nil
+			ret = ms[i]
+			return
 		}
 	}
+	err = Errors().NoNextVersion.Bind()
 
-	return nil, ErrNoNextVersion
+	return
 }
 
-// Previous : Get the previous migration.
-func (ms Migrations) Previous(current int64) (*Migration, error) {
-	for i := len(ms) - 1; i >= 0; i-- {
-		if ms[i].Version < current {
-			return ms[i], nil
+// Previous Возвращает миграцию предыдущую перед указанной версией.
+func (ms Migrations) Previous(current int64) (ret *Migration, err error) {
+	for _, m := range slices.Backward(ms) {
+		if m.Version < current {
+			ret = m
+			return
 		}
 	}
+	err = Errors().NoNextVersion.Bind()
 
-	return nil, ErrNoNextVersion
+	return
 }
 
-// Last gets the last migration.
-func (ms Migrations) Last() (*Migration, error) {
+// Last Возвращает последнюю миграцию списка.
+func (ms Migrations) Last() (ret *Migration, err error) {
 	if len(ms) == 0 {
-		return nil, ErrNoNextVersion
+		err = Errors().NoNextVersion.Bind()
+		return
 	}
+	ret = ms[len(ms)-1]
 
-	return ms[len(ms)-1], nil
+	return
 }
 
-func (ms Migrations) String() string {
-	str := ""
-	for _, m := range ms {
-		str += fmt.Sprintln(m)
+// String Возвращает список миграций, по одному файлу в строке.
+func (ms Migrations) String() (ret string) {
+	var (
+		sb  strings.Builder
+		mig *Migration
+	)
+
+	for _, mig = range ms {
+		sb.WriteString(mig.String())
+		sb.WriteString("\n")
 	}
-	return str
+	ret = sb.String()
+
+	return
 }
 
-// AddMigration adds a migration.
-func AddMigration(up func(*sql.Tx) error, down func(*sql.Tx) error) {
-	_, filename, _, _ := runtime.Caller(1)
-	AddNamedMigration(filename, up, down)
-}
+// CollectMigrations Возвращает все корректные миграции из каталога и реестра Go-функций
+// в диапазоне версий от current до target.
+func CollectMigrations(dirpath string, current, target int64) (migrations Migrations, err error) {
+	var (
+		sqlMigrationFiles []string
+		goMigrationFiles  []string
+		file              string
+		v                 int64
+		mig               *Migration
+		ok                bool
+	)
 
-// AddNamedMigration : Add a named migration.
-func AddNamedMigration(filename string, up func(*sql.Tx) error, down func(*sql.Tx) error) {
-	v, _ := NumericComponent(filename)
-	migration := &Migration{Version: v, Next: -1, Previous: -1, Registered: true, UpFn: up, DownFn: down, Source: filename}
-
-	if existing, ok := registeredGoMigrations[v]; ok {
-		panic(fmt.Sprintf("failed to add migration %q: version conflicts with %q", filename, existing.Source))
+	if _, err = os.Stat(dirpath); os.IsNotExist(err) {
+		err = Errors().DirectoryNotExists.Bind(dirpath)
+		return
 	}
-
-	registeredGoMigrations[v] = migration
-}
-
-// CollectMigrations returns all the valid looking migration scripts in the
-// migrations folder and go func registry, and key them by version.
-func CollectMigrations(dirpath string, current, target int64) (Migrations, error) {
-	var migrations Migrations
-
-	if _, err := os.Stat(dirpath); os.IsNotExist(err) {
-		return nil, fmt.Errorf("%s directory does not exists", dirpath)
-	}
-
-	// SQL migration files.
-	sqlMigrationFiles, err := filepath.Glob(dirpath + "/**.sql")
-	if err != nil {
-		return nil, err
-	}
-	for _, file := range sqlMigrationFiles {
-		v, err := NumericComponent(file)
-		if err != nil {
-			return nil, err
+	// SQL-файлы миграций.
+	sqlMigrationFiles = collectMigrationFiles(dirpath, extensionSQL)
+	for _, file = range sqlMigrationFiles {
+		if v, err = NumericComponent(file); err != nil {
+			return
 		}
 		if versionFilter(v, current, target) {
-			migration := &Migration{Version: v, Next: -1, Previous: -1, Source: file}
-			migrations = append(migrations, migration)
+			mig = &Migration{Version: v, Next: -1, Previous: -1, Source: file}
+			migrations = append(migrations, mig)
 		}
 	}
-
-	// Go migrations registered via goose.AddMigration().
-	for _, migration := range registeredGoMigrations {
-		v, err := NumericComponent(migration.Source)
-		if err != nil {
-			return nil, err
+	// Go-миграции, зарегистрированные через AddMigration().
+	for _, mig = range registeredGoMigrations {
+		if v, err = NumericComponent(mig.Source); err != nil {
+			return
 		}
 		if versionFilter(v, current, target) {
-			migrations = append(migrations, migration)
+			migrations = append(migrations, mig)
 		}
 	}
-
-	// Go migration files
-	goMigrationFiles, err := filepath.Glob(dirpath + "/**.go")
-	if err != nil {
-		return nil, err
-	}
-	for _, file := range goMigrationFiles {
-		v, err := NumericComponent(file)
-		if err != nil {
-			continue // Skip any files that don't have version prefix.
-		}
-
-		// Skip migrations already existing migrations registered via goose.AddMigration().
-		if _, ok := registeredGoMigrations[v]; ok {
+	// Go-файлы миграций без зарегистрированных функций.
+	goMigrationFiles = collectMigrationFiles(dirpath, extensionGo)
+	for _, file = range goMigrationFiles {
+		if v, err = NumericComponent(file); err != nil {
+			// Пропуск файлов без префикса версии в имени.
 			continue
 		}
-
+		// Пропуск миграций, уже добавленных в реестр через AddMigration().
+		if _, ok = registeredGoMigrations[v]; ok {
+			continue
+		}
 		if versionFilter(v, current, target) {
-			migration := &Migration{Version: v, Next: -1, Previous: -1, Source: file, Registered: false}
-			migrations = append(migrations, migration)
+			mig = &Migration{Version: v, Next: -1, Previous: -1, Source: file, Registered: false}
+			migrations = append(migrations, mig)
 		}
 	}
+	// Сортировка списка и обнаружение дублирующихся версий.
+	if migrations, err = sortAndConnectMigrations(migrations); err != nil {
+		return
+	}
 
-	migrations = sortAndConnectMigrations(migrations)
-
-	return migrations, nil
+	return
 }
 
-func sortAndConnectMigrations(migrations Migrations) Migrations {
-	sort.Sort(migrations)
+// Поиск файлов миграций с указанным расширением в каталоге.
+// Ошибка разбора шаблона невозможна: шаблон формируется из констант пакета.
+func collectMigrationFiles(dirpath, extension string) (files []string) {
+	files, _ = filepath.Glob(dirpath + "/**" + extension)
 
-	// now that we're sorted in the appropriate direction,
-	// populate next and previous for each migration
-	for i, m := range migrations {
-		prev := int64(-1)
+	return
+}
+
+// Сортировка списка миграций по версии и связывание миграций
+// указателями следующей и предыдущей версии.
+func sortAndConnectMigrations(migrations Migrations) (ret Migrations, err error) {
+	var (
+		seen map[int64]string
+		src  string
+		ok   bool
+		i    int
+		prev int64
+		mig  *Migration
+	)
+
+	seen = make(map[int64]string)
+	// Поиск миграций с одинаковым номером версии.
+	for _, mig = range migrations {
+		if src, ok = seen[mig.Version]; ok {
+			err = Errors().DuplicateVersion.Bind(mig.Version, src, mig.Source)
+			return
+		}
+		seen[mig.Version] = mig.Source
+	}
+	sort.Sort(migrations)
+	// Заполнение связей следующей и предыдущей версии.
+	for i, mig = range migrations {
+		prev = -1
 		if i > 0 {
 			prev = migrations[i-1].Version
-			migrations[i-1].Next = m.Version
+			migrations[i-1].Next = mig.Version
 		}
-		migrations[i].Previous = prev
+		mig.Previous = prev
 	}
+	ret = migrations
 
-	return migrations
+	return
 }
 
-func versionFilter(v, current, target int64) bool {
-
-	if target > current {
-		return v > current && v <= target
+// Проверка попадания версии миграции в диапазон между current и target.
+func versionFilter(v, current, target int64) (ret bool) {
+	switch {
+	case target > current:
+		ret = v > current && v <= target
+	case target < current:
+		ret = v <= current && v > target
 	}
 
-	if target < current {
-		return v <= current && v > target
-	}
-
-	return false
+	return
 }
 
-// EnsureDBVersion retrieves the current version for this DB.
-// Create and initialize the DB version table if it doesn't exist.
-func EnsureDBVersion(db *sql.DB) (int64, error) {
-	var row *MigrationRecord
+// EnsureDBVersion Возвращает текущую версию базы данных.
+// При отсутствии таблицы версий создаёт и инициализирует её.
+func EnsureDBVersion(db *sql.DB) (version int64, err error) {
+	var (
+		rows   *sql.Rows
+		row    *MigrationRecord
+		toSkip []int64
+		skip   bool
+		v      int64
+	)
 
-	rows, err := GetDialect().dbVersionQuery(db)
-	if err != nil {
-		return 0, createVersionTable(db)
+	// Чтение лога версий миграций.
+	if rows, err = GetDialect().dbVersionQuery(db); err != nil {
+		// Таблица версий отсутствует — создание и инициализация.
+		err = createVersionTable(db)
+		return
 	}
-	defer rows.Close()
-
-	// The most recent record for each migration specifies
-	// whether it has been applied or rolled back.
-	// The first version we find that has been applied is the current version.
-
-	toSkip := make([]int64, 0)
-
+	defer func() { _ = rows.Close() }()
+	toSkip = make([]int64, 0)
 	for rows.Next() {
 		row = new(MigrationRecord)
-
 		if err = rows.Scan(&row.VersionID, &row.IsApplied); err != nil {
-			log.Fatal("error scanning rows:", err)
+			err = Errors().ScanVersionRecords.Bind(err)
+			return
 		}
-
-		// have we already marked this version to be skipped?
-		skip := false
-		for _, v := range toSkip {
+		// Проверка наличия версии в списке пропускаемых.
+		skip = false
+		for _, v = range toSkip {
 			if v == row.VersionID {
 				skip = true
 				break
 			}
 		}
-
 		if skip {
 			continue
 		}
-
-		// if version has been applied we're done
+		// Первая применённая версия — текущая.
 		if row.IsApplied {
-			return row.VersionID, nil
+			version = row.VersionID
+			return
 		}
-
-		// latest version of migration has not been applied.
+		// Последняя запись версии не применена — версия пропускается.
 		toSkip = append(toSkip, row.VersionID)
 	}
+	err = Errors().NoNextVersion.Bind()
 
-	return 0, ErrNoNextVersion
+	return
 }
 
-// Create the goose_db_version table
-// and insert the initial 0 value into it
-func createVersionTable(db *sql.DB) error {
-	txn, err := db.Begin()
-	if err != nil {
-		return err
+// Создание таблицы goose_db_version
+// и запись в неё начальной нулевой версии.
+func createVersionTable(db *sql.DB) (err error) {
+	var (
+		txn     *sql.Tx
+		d       SQLDialect
+		version int
+		applied bool
+	)
+
+	if txn, err = db.Begin(); err != nil {
+		return
 	}
-
-	d := GetDialect()
-
-	if _, err := txn.Exec(d.createVersionTableSQL()); err != nil {
-		txn.Rollback()
-		return err
+	d = GetDialect()
+	if _, err = txn.Exec(d.createVersionTableSQL()); err != nil {
+		_ = txn.Rollback()
+		err = Errors().CreateVersionTable.Bind(err)
+		return
 	}
-
-	version, applied := 0, true
-	if _, err := txn.Exec(d.insertVersionSQL(), version, applied); err != nil {
-		txn.Rollback()
-		return err
+	version, applied = 0, true
+	if _, err = txn.Exec(d.insertVersionSQL(), version, applied); err != nil {
+		_ = txn.Rollback()
+		err = Errors().InsertInitialVersion.Bind(err)
+		return
 	}
+	err = txn.Commit()
 
-	return txn.Commit()
+	return
 }
 
-// GetDBVersion is a wrapper for EnsureDBVersion for callers that don't already
-// have their own DB instance
+// GetDBVersion Возвращает текущую версию базы данных.
+// При ошибке чтения версия устанавливается в -1.
 func GetDBVersion(db *sql.DB) (version int64, err error) {
 	if version, err = EnsureDBVersion(db); err != nil {
 		version = -1
 	}
+
 	return
 }

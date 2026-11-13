@@ -1,32 +1,108 @@
-# Compiled Object files, Static and Dynamic libs (Shared Objects)
+## Игнорируемые файлы проектов webnice.
+## (c)Alex Geer <monoflash@gmail.com>
+## Версия: 12.11.2026.
+
+## Скомпилированные объектные файлы, статические и динамические библиотеки.
 *.o
 *.a
 *.so
 
-# IDE
+## Файлы IDE и редакторов.
 .project
 .settings
 .idea
+.classpath
+.c9/
+*.launch
+*.sublime-workspace
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
 
-# Folders
+## Директории проекта.
 _obj
 _test
-/src
-/bin
+_dev
+/logs
+/log
+/storage
+/tmp
+/rpmbuild
 
-# Architecture specific extensions/prefixes
+## Файлы с секретами и ключами доступа.
+/.coveralls
+/.env
+/.env.mk
+
+## Расширения и префиксы, специфичные для архитектур процессоров.
 *.[568vq]
 [568vq].out
 
+## Файлы, сгенерированные cgo.
 *.cgo1.go
 *.cgo2.c
 _cgo_defun.c
 _cgo_gotypes.go
 _cgo_export.*
-
 _testmain.go
 
+## Исполняемые файлы и файлы профилирования.
 *.exe
 *.test
 *.prof
-*.log
+
+## Бинарные файлы и скомпилированные пакеты.
+/bin/
+/pkg/
+
+## Логи и локальные зависимости.
+/*.log
+.localpackages
+
+## Конфигурации и прочие временные файлы.
+/cache
+/conf/*.yml
+!/conf/*.yml.example
+!/conf/*.yml.example.yml
+!/conf/*.example.yml
+!/conf/*.example.log.yml
+/conf/keys/*
+!/conf/keys/*.md
+/conf/keys/jwt.private
+/conf/keys/jwt.public
+/conf/keys/server.private
+/conf/keys/server.public
+/run/*.pid
+/run/*.sock
+/run/*.state
+/run/*.bolt.db
+/doc/*.mwb.bak
+/doc/.~lock.*
+nohup.out
+/result.*
+/conf/proxy.txt
+/.config
+
+## Файлы frontend репозиториев (nodejs, angular).
+/dist
+/out-tsc
+/bazel-out
+/node_modules
+npm-debug.log
+yarn-error.log
+/.angular/cache
+.sass-cache/
+/connect.lock
+/coverage
+/typings
+.DS_Store
+Thumbs.db
+/proxy.conf.json
+/proxy.conf.*.json
+!/proxy.conf.example.json
+/src/environments/version.constant.ts
+/assets/images/sprite-icons.clean.svg
+/assets/images/sprite-icons.full.svg

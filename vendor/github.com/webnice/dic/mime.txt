@@ -1,0 +1,142 @@
+ApplicationAtomXml                                                   | application/atom+xml;charset=UTF-8                                        | Atom
+ApplicationEdiX12                                                    | application/EDI-X12                                                       | EDI X12 (RFC 1767)
+ApplicationEdifact                                                   | application/EDIFACT                                                       | EDI EDIFACT (RFC 1767)
+ApplicationJson                                                      | application/json;charset=UTF-8                                            | JavaScript Object Notation JSON (RFC 4627)
+ApplicationJavascript                                                | application/javascript;charset=UTF-8                                      | JavaScript (RFC 4329)
+ApplicationOctetStream                                               | application/octet-stream                                                  | двоичный файл без указания формата (RFC 2046)[4]
+ApplicationOgg                                                       | application/ogg                                                           | Ogg (RFC 5334)
+ApplicationPdf                                                       | application/pdf                                                           | Portable Document Format, PDF (RFC 3778)
+ApplicationPostscript                                                | application/postscript                                                    | PostScript (RFC 2046)
+ApplicationSoapXml                                                   | application/soap+xml                                                      | SOAP (RFC 3902)
+ApplicationFontWoff                                                  | application/font-woff                                                     | web open font format
+ApplicationXhtmlXml                                                  | application/xhtml+xml;charset=UTF-8                                       | XHTML (RFC 3236)
+ApplicationXmlDtd                                                    | application/xml-dtd;charset=UTF-8                                         | DTD (RFC 3023)
+ApplicationXopXml                                                    | application/xop+xml                                                       | XOP
+ApplicationZip                                                       | application/zip                                                           | ZIP
+ApplicationGzip                                                      | application/gzip                                                          | Gzip
+ApplicationXBittorrent                                               | application/x-bittorrent                                                  | BitTorrent
+ApplicationXTex                                                      | application/x-tex                                                         | TeX
+ApplicationXml                                                       | application/xml;charset=UTF-8                                             | XML
+ApplicationMsWord                                                    | application/msword                                                        | Файлы Microsoft Word (DOC)
+ApplicationMsExcel                                                   | application/vnd.ms-excel                                                  | Файлы Microsoft Excel (XLS)
+ApplicationXYaml                                                     | application/x-yaml;charset=UTF-8                                          | YAML
+ApplicationVndMozillaXulXml                                          | application/vnd.mozilla.xul+xml                                           | mozilla XUL файлы
+ApplicationVndGoogleEarthKmlXml                                      | application/vnd.google-earth.kml+xml                                      | KML файлы (например, для Google Earth)
+ApplicationXWwwFormUrlencoded                                        | application/x-www-form-urlencoded                                         | form encoded data
+ApplicationXDvi                                                      | application/x-dvi                                                         | DVI
+ApplicationXLatex                                                    | application/x-latex                                                       | LaTeX файлы
+ApplicationXFontTtf                                                  | application/x-font-ttf                                                    | TrueType (не зарегистрированный MIME-тип, но наиболее часто используемый)
+ApplicationXStuffit                                                  | application/x-stuffit                                                     | StuffIt
+ApplicationXRarCompressed                                            | application/x-rar-compressed                                              | RAR
+ApplicationXTar                                                      | application/x-tar                                                         | Tarball
+ApplicationXZipCompressed                                            | application/x-zip-compressed                                              | ZIP
+ApplicationXPkcs12                                                   | application/x-pkcs12                                                      | p12, pfx файлы
+ApplicationXPkcs7Certificates                                        | application/x-pkcs7-certificates                                          | p7b, spc файлы
+ApplicationXPkcs7Certreqresp                                         | application/x-pkcs7-certreqresp                                           | p7r файлы
+ApplicationXPkcs7Mime                                                | application/x-pkcs7-mime                                                  | p7c, p7m файлы
+ApplicationXPkcs7Signature                                           | application/x-pkcs7-signature                                             | p7s файлы
+ApplicationProtobuf                                                  | application/protobuf                                                      | gRPC protobuf
+ApplicationMsgpack                                                   | application/msgpack                                                       | Msgpack
+ApplicationXGenesisRom                                               | application/x-genesis-rom                                                 | Файл ROM картриджа Sega Genesis
+ApplicationWasm                                                      | application/wasm                                                          | WebAssembly (сокращённо WASM) — язык программирования низкого уровня, призванный внести программируемость туда, где нужны кроссплатформенность, эффективность и безопасность, в первую очередь на клиентскую сторону веба.
+ApplicationVndMsPowerpoint                                           | application/vnd.ms-powerpoint                                             | Файлы Microsoft PowerPoint (PPT)
+ApplicationVndOpenxmlformatsOfficedocumentWordprocessingmlDocument   | application/vnd.openxmlformats-officedocument.wordprocessingml.document   | Файлы Microsoft Word (DOCX)
+ApplicationVndOpenxmlformatsOfficedocumentSpreadsheetmlSheet         | application/vnd.openxmlformats-officedocument.spreadsheetml.sheet         | Файлы Microsoft Excel (XLSX)
+ApplicationVndOpenxmlformatsOfficedocumentPresentationmlPresentation | application/vnd.openxmlformats-officedocument.presentationml.presentation | Файлы Microsoft PowerPoint (PPTX)
+ApplicationEpubZip                                                   | application/epub+zip                                                      | Электронные книги EPUB
+ApplicationRtf                                                       | application/rtf                                                           | Текстовые документы RTF, rich text format
+ApplicationX7zCompressed                                             | application/x-7z-compressed                                               | Архивы 7-Zip
+ApplicationXBzip2                                                    | application/x-bzip2                                                       | Архивы bzip2
+ApplicationXXz                                                       | application/x-xz                                                          | Архивы xz
+ApplicationZstd                                                      | application/zstd                                                          | Архивы Zstandard (RFC 8878)
+ApplicationXNdjson                                                   | application/x-ndjson                                                      | Поток объектов JSON, разделённых переносом строки (NDJSON)
+ApplicationProblemJson                                               | application/problem+json;charset=UTF-8                                    | Описание ошибок HTTP API (RFC 9457)
+ApplicationLdJson                                                    | application/ld+json;charset=UTF-8                                         | JSON для связанных данных JSON-LD
+ApplicationYaml                                                      | application/yaml;charset=UTF-8                                            | Данные в формате YAML
+ApplicationXSh                                                       | application/x-sh                                                          | Скрипты командной оболочки shell
+ApplicationXMsdownload                                               | application/x-msdownload                                                  | Исполняемые файлы Microsoft Windows (EXE, DLL)
+ApplicationXIso9660Image                                             | application/x-iso9660-image                                               | Образы дисков ISO 9660
+ApplicationJavaArchive                                               | application/java-archive                                                  | Архивы Java (JAR)
+ApplicationXMatroska                                                 | application/x-matroska                                                    | Видео контейнер Matroska (MKV, де-факто)
+AudioBasic                                                           | audio/basic                                                               | mulaw аудио, 8 кГц, 1 канал (RFC 2046)
+AudioL24                                                             | audio/L24                                                                 | 24bit Linear PCM аудио, 8-48 кГц, 1-N каналов (RFC 3190)
+AudioMp4                                                             | audio/mp4                                                                 | MP4
+AudioAac                                                             | audio/aac                                                                 | AAC
+AudioMpeg                                                            | audio/mpeg                                                                | MP3 или др. MPEG (RFC 3003)
+AudioOgg                                                             | audio/ogg                                                                 | Ogg Vorbis, Speex, Flac или др. аудио (RFC 5334)
+AudioVorbis                                                          | audio/vorbis                                                              | Vorbis (RFC 5215)
+AudioXMsWma                                                          | audio/x-ms-wma                                                            | windows media audio
+AudioXMsWax                                                          | audio/x-ms-wax                                                            | windows media audio перенаправление
+AudioVndRnRealaudio                                                  | audio/vnd.rn-realaudio                                                    | RealAudio
+AudioVndWave                                                         | audio/vnd.wave                                                            | WAV (RFC 2361)
+AudioWebm                                                            | audio/webm                                                                | WebM
+AudioXFlac                                                           | audio/x-flac                                                              | Аудио FLAC
+AudioOpus                                                            | audio/opus                                                                | Аудио Opus (RFC 7587)
+AudioXWav                                                            | audio/x-wav                                                               | Аудио WAV
+AudioMidi                                                            | audio/midi                                                                | Аудио MIDI
+ImageGif                                                             | image/gif                                                                 | GIF (RFC 2045 и RFC 2046)
+ImageJpeg                                                            | image/jpeg                                                                | JPEG (RFC 2045 и RFC 2046)
+ImagePjpeg                                                           | image/pjpeg                                                               | JPEG
+ImagePng                                                             | image/png                                                                 | portable network graphics (RFC 2083)
+ImageSvgXml                                                          | image/svg+xml                                                             | SVG
+ImageTiff                                                            | image/tiff                                                                | TIFF (RFC 3302)
+ImageIco                                                             | image/vnd.microsoft.icon                                                  | ICO
+ImageVndWapWbmp                                                      | image/vnd.wap.wbmp                                                        | WBMP
+ImageWebp                                                            | image/webp                                                                | WebP
+ImageXIcon                                                           | image/x-icon                                                              | ICO, используемый Microsoft
+ImageBmp                                                             | image/bmp                                                                 | Растровые изображения BMP
+ImageAvif                                                            | image/avif                                                                | Изображения AVIF
+ImageHeic                                                            | image/heic                                                                | Изображения HEIC
+ImageHeif                                                            | image/heif                                                                | Изображения HEIF
+FontTtf                                                              | font/ttf                                                                  | Шрифт TrueType или ttf
+FontWoff                                                             | font/woff                                                                 | Шрифты WOFF (RFC 8081)
+FontWoff2                                                            | font/woff2                                                                | Шрифты WOFF2 (RFC 8081)
+FontOtf                                                              | font/otf                                                                  | Шрифты OpenType (RFC 8081)
+MessageHttp                                                          | message/http;charset=UTF-8                                                | Http (RFC 2616)
+MessageImdnXml                                                       | message/imdn+xml;charset=UTF-8                                            | IMDN (RFC 5438)
+MessagePartial                                                       | message/partial                                                           | E-mail (RFC 2045 и RFC 2046)
+MessageRfc822                                                        | message/rfc822                                                            | E-mail; EML-файлы, MIME-файлы, MHT-файлы, MHTML-файлы (RFC 2045 и RFC 2046)
+MessageDeliveryStatus                                                | message/delivery-status                                                   | RFC3464
+AutoReplied                                                          | auto-replied                                                              | RFC3464
+ModelExample                                                         | model/example                                                             | Model example (RFC 4735)
+ModelIges                                                            | model/iges                                                                | IGS файлы, IGES файлы (RFC 2077)
+ModelMesh                                                            | model/mesh                                                                | MSH файлы, MESH файлы (RFC 2077), SILO файлы
+ModelVrml                                                            | model/vrml                                                                | WRL файлы, VRML файлы (RFC 2077)
+ModelX3dBinary                                                       | model/x3d+binary                                                          | X3D ISO стандарт для 3D компьютерной графики, X3DB файлы
+ModelX3dVrml                                                         | model/x3d+vrml                                                            | X3D ISO стандарт для 3D компьютерной графики, X3DV VRML файлы
+ModelX3dXml                                                          | model/x3d+xml                                                             | X3D ISO стандарт для 3D компьютерной графики, X3D XML файлы
+MultipartMixed                                                       | multipart/mixed                                                           | MIME E-mail (RFC 2045 и RFC 2046)
+MultipartAlternative                                                 | multipart/alternative                                                     | MIME E-mail (RFC 2045 и RFC 2046)
+MultipartRelated                                                     | multipart/related                                                         | MIME E-mail (RFC 2387 и используемое MHTML (HTML mail))
+MultipartForm                                                        | multipart/form-data;charset=UTF-8                                         | MIME Webform (RFC 2388)
+MultipartSigned                                                      | multipart/signed                                                          | Signed (RFC 1847)
+MultipartEncrypted                                                   | multipart/encrypted                                                       | Encrypted (RFC 1847)
+TextCmd                                                              | text/cmd;charset=UTF-8                                                    | команды
+TextCss                                                              | text/css;charset=UTF-8                                                    | cascading style sheets (RFC 2318)
+TextCsv                                                              | text/csv;charset=UTF-8                                                    | CSV (RFC 4180)
+TextHtml                                                             | text/html;charset=UTF-8                                                   | HTML (RFC 2854)
+TextJavascript                                                       | text/javascript;charset=UTF-8                                             | (Obsolete): JavaScript (RFC 4329)
+TextJsx                                                              | text/jsx;charset=UTF-8                                                    | Javascript template for react
+TextPlain                                                            | text/plain;charset=UTF-8                                                  | текстовые данные (RFC 2046 и RFC 3676)
+TextPhp                                                              | text/php;charset=UTF-8                                                    | Скрипт на языке PHP
+TextXPython                                                          | text/x-python;charset=UTF-8                                               | Скрипт на языке Python
+TextXml                                                              | text/xml;charset=UTF-8                                                    | extensible markup language (RFC 3023)
+TextMarkdown                                                         | text/markdown;charset=UTF-8                                               | файл языка разметки Markdown (RFC 7763)
+TextCacheManifest                                                    | text/cache-manifest                                                       | файл манифеста (RFC 2046)
+TextXJqueryTmpl                                                      | text/x-jquery-tmpl                                                        | jQuery
+TextRfc822Headers                                                    | text/rfc822-headers                                                       | RFC822
+TextXMakefile                                                        | text/x-makefile                                                           | Makefile
+TextCalendar                                                         | text/calendar;charset=UTF-8                                               | Календари и события iCalendar (RFC 5545)
+TextVcard                                                            | text/vcard;charset=UTF-8                                                  | Визитные карточки vCard (RFC 6350)
+TextTabSeparatedValues                                               | text/tab-separated-values;charset=UTF-8                                   | Табличные данные с разделителем табуляция (TSV)
+TextEventStream                                                      | text/event-stream;charset=UTF-8                                           | Поток событий server-sent events (SSE)
+VideoMpeg                                                            | video/mpeg                                                                | MPEG-1 (RFC 2045 и RFC 2046)
+VideoMp4                                                             | video/mp4                                                                 | MP4 (RFC 4337)
+VideoOgg                                                             | video/ogg                                                                 | OGG Theora или другое видео (RFC 5334)
+VideoQuicktime                                                       | video/quicktime                                                           | QuickTime
+VideoWebm                                                            | video/webm                                                                | WebM
+VideoXMsWmv                                                          | video/x-ms-wmv                                                            | windows media video
+VideoXFlv                                                            | video/x-flv                                                               | FLV
+VideoXMsvideo                                                        | video/x-msvideo                                                           | AVI
+Video3gpp                                                            | video/3gpp                                                                | .3gpp .3gp
+Video3gpp2                                                           | video/3gpp2                                                               | .3gpp2 .3g2

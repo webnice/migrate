@@ -5,62 +5,74 @@ import (
 	"log"
 )
 
-// UpTo migrates up to a specific version.
-func UpTo(db *sql.DB, dir string, version int64) error {
-	migrations, err := CollectMigrations(dir, minVersion, version)
-	if err != nil {
-		return err
-	}
+// UpTo Применение миграций до указанной версии.
+func UpTo(db *sql.DB, dir string, version int64) (err error) {
+	const tplNoMigrations = "goose: нет миграций для выполнения. Текущая версия: %d"
+	var (
+		migrations Migrations
+		current    int64
+		next       *Migration
+		end        bool
+	)
 
+	if migrations, err = CollectMigrations(dir, minVersion, version); err != nil {
+		return
+	}
 	for {
-		current, err := GetDBVersion(db)
-		if err != nil {
-			return err
+		if end {
+			break
 		}
-
-		next, err := migrations.Next(current)
-		if err != nil {
-			if err == ErrNoNextVersion {
-				log.Printf("goose: no migrations to run. current version: %d\n", current)
-				return nil
+		// Чтение текущей версии базы данных.
+		if current, err = GetDBVersion(db); err != nil {
+			end = true
+			continue
+		}
+		// Поиск следующей миграции.
+		if next, err = migrations.Next(current); err != nil {
+			if Errors().NoNextVersion.Is(err) {
+				// Миграции закончились.
+				log.Printf(tplNoMigrations, current)
+				err = nil
 			}
-			return err
+			end = true
+			continue
 		}
-
+		// Применение следующей миграции.
 		if err = next.Up(db); err != nil {
-			return err
+			end = true
 		}
 	}
+
+	return
 }
 
-// Up applies all available migrations.
-func Up(db *sql.DB, dir string) error {
-	return UpTo(db, dir, maxVersion)
-}
+// Up Применение всех доступных миграций.
+func Up(db *sql.DB, dir string) error { return UpTo(db, dir, MaxVersion) }
 
-// UpByOne migrates up by a single version.
-func UpByOne(db *sql.DB, dir string) error {
-	migrations, err := CollectMigrations(dir, minVersion, maxVersion)
-	if err != nil {
-		return err
+// UpByOne Применение одной следующей миграции.
+func UpByOne(db *sql.DB, dir string) (err error) {
+	const tplNoMigrations = "goose: нет миграций для выполнения. Текущая версия: %d"
+	var (
+		migrations     Migrations
+		currentVersion int64
+		next           *Migration
+	)
+
+	if migrations, err = CollectMigrations(dir, minVersion, MaxVersion); err != nil {
+		return
 	}
-
-	currentVersion, err := GetDBVersion(db)
-	if err != nil {
-		return err
+	if currentVersion, err = GetDBVersion(db); err != nil {
+		return
 	}
-
-	next, err := migrations.Next(currentVersion)
-	if err != nil {
-		if err == ErrNoNextVersion {
-			log.Printf("goose: no migrations to run. current version: %d\n", currentVersion)
+	if next, err = migrations.Next(currentVersion); err != nil {
+		if Errors().NoNextVersion.Is(err) {
+			// Миграции закончились.
+			log.Printf(tplNoMigrations, currentVersion)
+			err = nil
 		}
-		return err
+		return
 	}
+	err = next.Up(db)
 
-	if err = next.Up(db); err != nil {
-		return err
-	}
-
-	return nil
+	return
 }

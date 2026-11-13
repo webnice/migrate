@@ -2,12 +2,11 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
-	"log"
+	"os"
 
 	"github.com/webnice/migrate/goose"
 
-	// Init database drivers
+	// Подключение драйверов баз данных.
 	_ "github.com/ClickHouse/clickhouse-go" // Clickhouse
 	_ "github.com/go-sql-driver/mysql"      // Mysql
 	_ "github.com/lib/pq"                   // Postgres, Cockroach, Redshift
@@ -15,51 +14,73 @@ import (
 	_ "github.com/ziutek/mymysql/godrv"     // App Engine CloudSQL
 )
 
+// Точка входа в приложение.
 func main() {
+	var err error
+
+	if err = execute(os.Args[1:]); err != nil {
+		logFatalf("%s", err)
+	}
+}
+
+// Выполнение команды утилиты.
+func execute(argv []string) (err error) {
+	const (
+		cmdNameCreate  = "create"
+		cmdUpTo        = "up-to"
+		cmdDownTo      = "down-to"
+		driverPostgres = "postgres"
+		driverMysql    = "mysql"
+	)
 	var (
-		err error
 		cmd string
 		arg *Args
 		db  *sql.DB
 	)
 
-	cmd, arg = args()
-	// Exclusive execution of the create command
-	if cmd == `create` {
+	if cmd, arg, err = args(argv); err != nil {
+		return
+	}
+	// Команда create выполняется без подключения к базе данных.
+	if cmd == cmdNameCreate {
 		if err = goose.Run(cmd, nil, arg.Directory, arg.CreateName, arg.CreateType); err != nil {
-			log.Fatalf("Error: %s", err)
+			err = Errors().RunCommand.Bind(cmd, err)
 		}
 		return
 	}
-	// Checking driver and set dialect
+	// Проверка драйвера и установка диалекта.
 	switch arg.Driver {
-	case `mysql`, `postgres`, `sqlite3`, `clickhouse`:
+	case "mysql", "postgres", "sqlite3", "clickhouse":
 		err = goose.SetDialect(arg.Driver)
-	case `redshift`:
+	case "redshift":
 		err = goose.SetDialect(arg.Driver)
-		arg.Driver = "postgres"
-	case `tidb`:
+		arg.Driver = driverPostgres
+	case "tidb":
 		err = goose.SetDialect(arg.Driver)
-		arg.Driver = "mysql"
+		arg.Driver = driverMysql
 	default:
-		err = fmt.Errorf("%q driver not supported", arg.Driver)
+		err = Errors().UnknownDriver.Bind(arg.Driver)
 	}
 	if err != nil {
-		log.Fatalf("%s\n", err)
+		return
 	}
-	// Opening database connection
+	// Подключение к базе данных.
 	if db, err = sql.Open(arg.Driver, arg.Dsn); err != nil {
-		log.Fatalf("Connect to database error: %s", err)
+		err = Errors().ConnectDatabase.Bind(err)
+		return
 	}
+	defer func() { _ = db.Close() }()
 	db.SetConnMaxLifetime(0)
-	// Running command of database migration with different arguments
+	// Выполнение команды миграции.
 	switch cmd {
-	case `up-to`, `down-to`:
+	case cmdUpTo, cmdDownTo:
 		err = goose.Run(cmd, db, arg.Directory, arg.UpDownVersion)
 	default:
 		err = goose.Run(cmd, db, arg.Directory)
 	}
 	if err != nil {
-		log.Fatalf("Error: %s", err)
+		err = Errors().RunCommand.Bind(cmd, err)
 	}
+
+	return
 }

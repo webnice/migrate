@@ -1,27 +1,12 @@
 package goose
 
-import (
-	"database/sql"
-	"fmt"
-)
+import "database/sql"
 
-// SQLDialect abstracts the details of specific SQL dialects
-// for goose's few SQL specific statements
-type SQLDialect interface {
-	createVersionTableSQL() string // sql string to create the goose_db_version table
-	insertVersionSQL() string      // sql string to insert the initial version table row
-	dbVersionQuery(db *sql.DB) (*sql.Rows, error)
-}
+// GetDialect Возвращает текущий диалект базы данных.
+func GetDialect() SQLDialect { return dialect }
 
-var dialect SQLDialect = &MySQLDialect{}
-
-// GetDialect gets the SQLDialect
-func GetDialect() SQLDialect {
-	return dialect
-}
-
-// SetDialect sets the SQLDialect
-func SetDialect(d string) error {
+// SetDialect Устанавливает диалект базы данных по его имени.
+func SetDialect(d string) (err error) {
 	switch d {
 	case "mysql":
 		dialect = &MySQLDialect{}
@@ -36,19 +21,16 @@ func SetDialect(d string) error {
 	case "clickhouse":
 		dialect = &ClickHouseDialect{}
 	default:
-		return fmt.Errorf("%q: unknown dialect", d)
+		err = Errors().UnknownDialect.Bind(d)
 	}
 
-	return nil
+	return
 }
 
-////////////////////////////
-// Postgres
-////////////////////////////
-
-// PostgresDialect struct.
+// PostgresDialect Диалект PostgreSQL.
 type PostgresDialect struct{}
 
+// SQL-выражение создания таблицы goose_db_version.
 func (pg PostgresDialect) createVersionTableSQL() string {
 	return `CREATE TABLE goose_db_version (
               id serial NOT NULL,
@@ -59,26 +41,20 @@ func (pg PostgresDialect) createVersionTableSQL() string {
             );`
 }
 
+// SQL-выражение добавления записи в таблицу версий.
 func (pg PostgresDialect) insertVersionSQL() string {
 	return "INSERT INTO goose_db_version (version_id, is_applied) VALUES ($1, $2);"
 }
 
+// Запрос чтения лога версий миграций.
 func (pg PostgresDialect) dbVersionQuery(db *sql.DB) (*sql.Rows, error) {
-	rows, err := db.Query("SELECT version_id, is_applied from goose_db_version ORDER BY id DESC")
-	if err != nil {
-		return nil, err
-	}
-
-	return rows, err
+	return db.Query("SELECT version_id, is_applied from goose_db_version ORDER BY id DESC")
 }
 
-////////////////////////////
-// MySQL
-////////////////////////////
-
-// MySQLDialect struct.
+// MySQLDialect Диалект MySQL.
 type MySQLDialect struct{}
 
+// SQL-выражение создания таблицы goose_db_version.
 func (m MySQLDialect) createVersionTableSQL() string {
 	return "CREATE TABLE `goose_db_version` (" +
 		"id serial NOT NULL COMMENT 'Уникальный идентификатор записи.', " +
@@ -89,26 +65,20 @@ func (m MySQLDialect) createVersionTableSQL() string {
 		") AUTO_INCREMENT = 1 COMMENT = 'Лог миграций';"
 }
 
+// SQL-выражение добавления записи в таблицу версий.
 func (m MySQLDialect) insertVersionSQL() string {
 	return "INSERT INTO goose_db_version (version_id, is_applied) VALUES (?, ?);"
 }
 
+// Запрос чтения лога версий миграций.
 func (m MySQLDialect) dbVersionQuery(db *sql.DB) (*sql.Rows, error) {
-	rows, err := db.Query("SELECT version_id, is_applied FROM goose_db_version ORDER BY id DESC")
-	if err != nil {
-		return nil, err
-	}
-
-	return rows, err
+	return db.Query("SELECT version_id, is_applied FROM goose_db_version ORDER BY id DESC")
 }
 
-////////////////////////////
-// sqlite3
-////////////////////////////
-
-// Sqlite3Dialect struct.
+// Sqlite3Dialect Диалект sqlite3.
 type Sqlite3Dialect struct{}
 
+// SQL-выражение создания таблицы goose_db_version.
 func (m Sqlite3Dialect) createVersionTableSQL() string {
 	return `CREATE TABLE goose_db_version (
 	          id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -118,26 +88,20 @@ func (m Sqlite3Dialect) createVersionTableSQL() string {
             );`
 }
 
+// SQL-выражение добавления записи в таблицу версий.
 func (m Sqlite3Dialect) insertVersionSQL() string {
 	return "INSERT INTO goose_db_version (version_id, is_applied) VALUES (?, ?);"
 }
 
+// Запрос чтения лога версий миграций.
 func (m Sqlite3Dialect) dbVersionQuery(db *sql.DB) (*sql.Rows, error) {
-	rows, err := db.Query("SELECT version_id, is_applied from goose_db_version ORDER BY id DESC")
-	if err != nil {
-		return nil, err
-	}
-
-	return rows, err
+	return db.Query("SELECT version_id, is_applied from goose_db_version ORDER BY id DESC")
 }
 
-////////////////////////////
-// Redshift
-////////////////////////////
-
-// RedshiftDialect struct.
+// RedshiftDialect Диалект Redshift.
 type RedshiftDialect struct{}
 
+// SQL-выражение создания таблицы goose_db_version.
 func (rs RedshiftDialect) createVersionTableSQL() string {
 	return `CREATE TABLE goose_db_version (
               id integer NOT NULL identity(1, 1),
@@ -148,26 +112,20 @@ func (rs RedshiftDialect) createVersionTableSQL() string {
             );`
 }
 
+// SQL-выражение добавления записи в таблицу версий.
 func (rs RedshiftDialect) insertVersionSQL() string {
 	return "INSERT INTO goose_db_version (version_id, is_applied) VALUES ($1, $2);"
 }
 
+// Запрос чтения лога версий миграций.
 func (rs RedshiftDialect) dbVersionQuery(db *sql.DB) (*sql.Rows, error) {
-	rows, err := db.Query("SELECT version_id, is_applied from goose_db_version ORDER BY id DESC")
-	if err != nil {
-		return nil, err
-	}
-
-	return rows, err
+	return db.Query("SELECT version_id, is_applied from goose_db_version ORDER BY id DESC")
 }
 
-////////////////////////////
-// TiDB
-////////////////////////////
-
-// TiDBDialect struct.
+// TiDBDialect Диалект TiDB.
 type TiDBDialect struct{}
 
+// SQL-выражение создания таблицы goose_db_version.
 func (m TiDBDialect) createVersionTableSQL() string {
 	return `CREATE TABLE goose_db_version (
 	          id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
@@ -178,26 +136,20 @@ func (m TiDBDialect) createVersionTableSQL() string {
 	        );`
 }
 
+// SQL-выражение добавления записи в таблицу версий.
 func (m TiDBDialect) insertVersionSQL() string {
 	return "INSERT INTO goose_db_version (version_id, is_applied) VALUES (?, ?);"
 }
 
+// Запрос чтения лога версий миграций.
 func (m TiDBDialect) dbVersionQuery(db *sql.DB) (*sql.Rows, error) {
-	rows, err := db.Query("SELECT version_id, is_applied from goose_db_version ORDER BY id DESC")
-	if err != nil {
-		return nil, err
-	}
-
-	return rows, err
+	return db.Query("SELECT version_id, is_applied from goose_db_version ORDER BY id DESC")
 }
 
-////////////////////////////
-// ClickHouse
-////////////////////////////
-
-// ClickHouseDialect struct.
+// ClickHouseDialect Диалект ClickHouse.
 type ClickHouseDialect struct{}
 
+// SQL-выражение создания таблицы goose_db_version.
 func (ClickHouseDialect) createVersionTableSQL() string {
 	return `
 		CREATE TABLE goose_db_version (
@@ -209,14 +161,12 @@ func (ClickHouseDialect) createVersionTableSQL() string {
 	`
 }
 
+// SQL-выражение добавления записи в таблицу версий.
 func (ClickHouseDialect) insertVersionSQL() string {
 	return "INSERT INTO goose_db_version (version_id, is_applied) VALUES (?, ?)"
 }
 
+// Запрос чтения лога версий миграций.
 func (ClickHouseDialect) dbVersionQuery(db *sql.DB) (*sql.Rows, error) {
-	rows, err := db.Query("SELECT version_id, is_applied FROM goose_db_version ORDER BY version_id DESC, tstamp DESC")
-	if err != nil {
-		return nil, err
-	}
-	return rows, err
+	return db.Query("SELECT version_id, is_applied FROM goose_db_version ORDER BY version_id DESC, tstamp DESC")
 }

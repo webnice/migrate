@@ -2,56 +2,72 @@ package goose
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 )
 
-// Down rolls back a single migration from the current version.
-func Down(db *sql.DB, dir string) error {
-	currentVersion, err := GetDBVersion(db)
-	if err != nil {
-		return err
-	}
+// Down Откат одной миграции от текущей версии.
+func Down(db *sql.DB, dir string) (err error) {
+	var (
+		currentVersion int64
+		migrations     Migrations
+		current        *Migration
+	)
 
-	migrations, err := CollectMigrations(dir, minVersion, maxVersion)
-	if err != nil {
-		return err
+	if currentVersion, err = GetDBVersion(db); err != nil {
+		return
 	}
-
-	current, err := migrations.Current(currentVersion)
-	if err != nil {
-		return fmt.Errorf("no migration %v", currentVersion)
+	if migrations, err = CollectMigrations(dir, minVersion, MaxVersion); err != nil {
+		return
 	}
+	if current, err = migrations.Current(currentVersion); err != nil {
+		err = Errors().MigrationNotFound.Bind(currentVersion)
+		return
+	}
+	err = current.Down(db)
 
-	return current.Down(db)
+	return
 }
 
-// DownTo rolls back migrations to a specific version.
-func DownTo(db *sql.DB, dir string, version int64) error {
-	migrations, err := CollectMigrations(dir, minVersion, maxVersion)
-	if err != nil {
-		return err
-	}
+// DownTo Откат миграций до указанной версии.
+func DownTo(db *sql.DB, dir string, version int64) (err error) {
+	const tplNoMigrations = "goose: нет миграций для выполнения. Текущая версия: %d"
+	var (
+		migrations     Migrations
+		currentVersion int64
+		current        *Migration
+		end            bool
+	)
 
+	if migrations, err = CollectMigrations(dir, minVersion, MaxVersion); err != nil {
+		return
+	}
 	for {
-		currentVersion, err := GetDBVersion(db)
-		if err != nil {
-			return err
+		if end {
+			break
 		}
-
-		current, err := migrations.Current(currentVersion)
-		if err != nil {
-			log.Printf("goose: no migrations to run. current version: %d\n", currentVersion)
-			return nil
+		// Чтение текущей версии базы данных.
+		if currentVersion, err = GetDBVersion(db); err != nil {
+			end = true
+			continue
 		}
-
+		// Поиск миграции текущей версии, её отсутствие означает завершение отката.
+		if current, err = migrations.Current(currentVersion); err != nil {
+			log.Printf(tplNoMigrations, currentVersion)
+			err = nil
+			end = true
+			continue
+		}
 		if current.Version <= version {
-			log.Printf("goose: no migrations to run. current version: %d\n", currentVersion)
-			return nil
+			// Достигнута требуемая версия.
+			log.Printf(tplNoMigrations, currentVersion)
+			end = true
+			continue
 		}
-
+		// Откат текущей миграции.
 		if err = current.Down(db); err != nil {
-			return err
+			end = true
 		}
 	}
+
+	return
 }
